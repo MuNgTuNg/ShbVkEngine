@@ -21,11 +21,11 @@ const std::vector<const char*> validationLayers = {
 
 class ShbDebug{
  public:
-    const bool DEBUG = true;
+    const bool DEBUG = false;
     const bool LogToFile = false;
 
-    ShbDebug(VkInstance& instance) : _instance(instance) {
-    }
+    ShbDebug(VkInstance& instance) : _instance(instance) {}
+    ShbDebug(VkInstance& instance, bool debug) : _instance(instance), DEBUG(debug) {}
 
     ~ShbDebug() {
         if (enableValidationLayers) {

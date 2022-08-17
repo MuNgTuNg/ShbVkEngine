@@ -49,10 +49,8 @@ void Device::createInstance(){
 void Device::initVulkan(){
     
     createInstance();
-
+    //createPhysicalDevice(); //TODO
     
-    //createPhysicalDevice();
-
     
 }
 
