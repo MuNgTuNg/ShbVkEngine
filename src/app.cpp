@@ -8,7 +8,7 @@ namespace shb{
 
 void App::run(){
     while(!glfwWindowShouldClose(_window->getwindow())){
-        glfwPollEvents();
+        glfwWaitEvents();
     }
 }
 

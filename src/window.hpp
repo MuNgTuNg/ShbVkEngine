@@ -8,9 +8,10 @@
 class Window{
 
      public:
+     Window() = default;
      Window(int width, int height, const std::string& title);
      ~Window();
-     Window operator=(const Window&) = delete;
+     //Window operator=(const Window&) = delete;
      Window(const Window&) = delete;
 
      GLFWwindow* getwindow() { 

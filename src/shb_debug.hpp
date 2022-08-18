@@ -12,7 +12,7 @@
 namespace shb{
 //need to make more interesting
     
-const bool enableValidationLayers = true;
+const bool enableValidationLayers = false;
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -23,6 +23,7 @@ class ShbDebug{
  public:
     const bool DEBUG = false;
     const bool LogToFile = false;
+    bool init = false;
 
     ShbDebug(VkInstance& instance) : _instance(instance) {}
     ShbDebug(VkInstance& instance, bool debug) : _instance(instance), DEBUG(debug) {}

@@ -27,7 +27,7 @@ class Device{
     VkDevice _device;
     VkInstance _instance;
     ShbDebug* _debug = new ShbDebug(_instance);
-    ShbDebug* _debug2 = new ShbDebug(_instance);
+    //ShbDebug* _debug2 = new ShbDebug(_instance);
     
     
 };

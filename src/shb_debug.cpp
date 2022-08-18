@@ -63,6 +63,8 @@ void ShbDebug::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
 void ShbDebug::setupDebugMessenger(VkInstance& instance) {
         if (!enableValidationLayers) return;
 
+        if(!init){
+
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
@@ -70,6 +72,8 @@ void ShbDebug::setupDebugMessenger(VkInstance& instance) {
             log("Successfully set up debug messenger\n");
         }else{
             log("Failed to set up debug messenger\n");
+        }
+        init = true;
         }
     }
 
