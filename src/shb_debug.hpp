@@ -14,14 +14,11 @@ namespace shb{
     
 const bool enableValidationLayers = false;
 
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
-};
 
 
 class ShbDebug{
  public:
-    const bool DEBUG = false;
+    const bool DEBUG = true;
     const bool LogToFile = false;
     bool init = false;
 
@@ -33,6 +30,10 @@ class ShbDebug{
         DestroyDebugUtilsMessengerEXT(_instance, debugMessenger, nullptr);
         }
     }
+    const std::vector<const char*> validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+    };
+
 
 
     std::vector<const char *> getRequiredExtensions();
@@ -43,10 +44,14 @@ class ShbDebug{
 
     void log(const std::string& msg){
         if(DEBUG == true){
-            std::cout<<msg;
+            std::cout<<msg << "\n";
         }
     }
-
+    void log (int i){
+        if(DEBUG == true){
+	   std::cout<<i << "\n";
+	}
+    }
     
     
     VkDebugUtilsMessengerEXT debugMessenger;

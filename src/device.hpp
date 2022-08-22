@@ -1,14 +1,10 @@
 #pragma once
+#include <vector>
 #include <iostream>
 #include "shb_debug.hpp"
+
 namespace shb{
 
-
-// const bool enableValidationLayers = true;
-
-// const std::vector<const char*> validationLayers = {
-//     "VK_LAYER_KHRONOS_validation"
-// };
 
 class Device{
  public:   
@@ -23,12 +19,17 @@ class Device{
     void initVulkan();
     void createInstance();
     void setupDebugMessenger();
+    void createPhysicalDevice();
+    void createLogicalDevice();
+
+    VkPhysicalDevice _physicalDevice;
+    VkQueueFamilyProperties _queueFamProps;
 
     VkDevice _device;
     VkInstance _instance;
     ShbDebug* _debug = new ShbDebug(_instance);
-    //ShbDebug* _debug2 = new ShbDebug(_instance);
     
+    std::vector<const char*> _extensions{};
     
 };
 
