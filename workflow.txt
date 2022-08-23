@@ -1,0 +1,32 @@
+1: Instance creation
+	1a: Create instance handle
+	1b: Fill in VkApplicationInfo struct
+	1c: Fill in VkInstanceCreateInfo struct
+	1d: Get required extensions from extensions vector (list of extensions in const char*)
+	1e: Enable validation layers
+	1f: Create instance (VkCreateInstance)
+
+2: Setup debug messenger
+	1a: Follow usual guide (awkward)
+
+3: Physical device setup:
+	3a: Add VkPhysicalDevice handle
+	3b: Enumerate 
+	3c: Add to vector
+	3d: Iterate over vector of devices and check suitability
+		3da: Query physical device properties and physical device features
+		using VkGetPhysicalDeviceProperties and VkGetPhysicalDeviceFeatures
+	        3db: return boolean value based on desired features and properties
+	3e: Assign most suitable device to device handle (check for VK_NULL_HANDLE)
+
+4: Find queue families:
+	4a: Create QueueFamilyIndeces struct (holds uint32_t values that represent
+	    a "Queue family" such as graphics family or present family
+	    and also wether they hold a value or not, using a boolean that we set 
+	    when we assign to the indeces) 
+	4b: 
+	
+	
+	
+
+
