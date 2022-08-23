@@ -13,8 +13,8 @@ namespace shb{
 struct QueueFamilyIndices {
   uint32_t graphicsFamily;
   uint32_t presentFamily;
-  bool graphicsFamilyHasValue = false;
-  bool presentFamilyHasValue = false;
+  bool graphicsFamilyHasValue;
+  bool presentFamilyHasValue;
   
   bool isComplete() { return graphicsFamilyHasValue; /*&& presentFamilyHasValue;*/ } //essentially searching for all queues specified, 
                                                                                      //represented by indeces

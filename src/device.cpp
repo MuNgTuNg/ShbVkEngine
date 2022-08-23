@@ -195,12 +195,12 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device) {
   QueueFamilyIndices indices;
 
   uint32_t queueCount = 0;
-  vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, nullptr); //get amount of queue families supported
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueCount, nullptr); //get amount of queue families supported
 
   std::vector<VkQueueFamilyProperties> properties(queueCount); //create vector to hold them
-  vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, properties.data()); //write them into vector
+  //vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, properties.data()); //write them into vector
 
-  int i = 0;
+  uint32_t i = 0;
   for(const auto & property : properties){
     if(property.queueFlags & VK_QUEUE_GRAPHICS_BIT){  //does our device support graphics queues?
       indices.graphicsFamily = i;       //if so set its index to the iteration number
@@ -208,6 +208,7 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device) {
     }
     ++i;  //increment index
   }
+  
   return indices; //return bundled information
 
 }
@@ -224,7 +225,7 @@ bool Device::isDeviceSuitable(VkPhysicalDevice device){
     // return properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU 
     // && features.geometryShader;
         
-    QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+    QueueFamilyIndices indices = findQueueFamilies(device);
     return indices.isComplete();
 }
 
