@@ -16,7 +16,8 @@ struct QueueFamilyIndices {
   bool graphicsFamilyHasValue = false;
   bool presentFamilyHasValue = false;
   
-  bool isComplete() { return graphicsFamilyHasValue; /*&& presentFamilyHasValue;*/ }
+  bool isComplete() { return graphicsFamilyHasValue; /*&& presentFamilyHasValue;*/ } //essentially searching for all queues specified, 
+                                                                                     //represented by indeces
 };
  
 

@@ -24,8 +24,13 @@
 	    a "Queue family" such as graphics family or present family
 	    and also wether they hold a value or not, using a boolean that we set 
 	    when we assign to the indeces) 
-	4b: 
-	
+	4b: Use "findQueueFamilies" function to scrape device of available queue
+	    families and assign them indices to use to access them
+   	    (vkGetPhysicalDeviceQueueFamilyProperties, create vector,
+	    iterate through vector of VkQueueFamilyProperties and see if the
+ 	    queueFlags paramater matches VK_QUEUE_GRAPHICS_BIT (for example)
+     	    assign index to graphicsFamily member of struct that holds the 
+	    indeces, and return said struct to allow external access
 	
 	
 

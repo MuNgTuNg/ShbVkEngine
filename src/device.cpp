@@ -183,6 +183,8 @@ void Device::createLogicalDevice(){
       _debug->log("Successfully created logical device!");
     }
 
+    vkGetDeviceQueue(_device,indices.graphicsFamily, 0, &graphicsQueue);
+
 
 
 
