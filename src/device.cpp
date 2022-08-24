@@ -146,7 +146,6 @@ void Device::createInstance() {
     _debug->log("Created instance successfully");
   }
 
-  //hasGflwRequiredInstanceExtensions();
 }
 
 
