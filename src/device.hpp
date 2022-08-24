@@ -1,13 +1,18 @@
 #pragma once
 #include <string>
 #include <vulkan/vulkan.hpp>
+#define VK_USE_PLATFORM_XCB
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+//#define GLFW_EXPOSE_NATIVE_X11
+#include <GLFW/glfw3native.h>
 
 #include <iostream>
 #include <vector> 
 #include <cstring>
 
 #include "shb_debug.hpp"
+#include "window.hpp"
 namespace shb{
 
 struct QueueFamilyIndices {
@@ -26,7 +31,10 @@ const bool enableValidationLayers = true;
 
 class Device{
  public:   
-    Device();
+    Device() = delete;
+    Device(Window* w) : _window(w) {
+      initVulkan();
+    }
     ~Device();
     
 
@@ -38,6 +46,7 @@ class Device{
     void createInstance();
     void pickPhysicalDevice();
     void createLogicalDevice();
+    void createSurface();
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice);
     bool isDeviceSuitable(VkPhysicalDevice);
@@ -55,9 +64,9 @@ class Device{
     ShbDebug* _debug = new ShbDebug();
     VkQueue graphicsQueue;
     VkDebugUtilsMessengerEXT debugMessenger;
-    
+    VkSurfaceKHR _surface;
 
-    
+    Window* _window;
     std::vector<const char*> _extensions{};
     
     static const int NUM_QUEUES = 2;

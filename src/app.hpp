@@ -31,7 +31,7 @@ class App
    void cleanup();
 
 
-   Device* _device = new Device(); //App outlives device
+   Device* _device = new Device(_window); //App outlives device
 
    Window* _window;
    const int HEIGHT = 1000;

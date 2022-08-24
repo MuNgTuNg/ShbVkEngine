@@ -53,6 +53,18 @@ void Device::setupDebugMessenger() {
   }
 }
 
+void DestroyDebugUtilsMessengerEXT(
+    VkInstance instance,
+    VkDebugUtilsMessengerEXT debugMessenger,
+    const VkAllocationCallbacks *pAllocator) {
+  auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+      instance,
+      "vkDestroyDebugUtilsMessengerEXT");
+  if (func != nullptr) {
+    func(instance, debugMessenger, pAllocator);
+  }
+}
+
 bool Device::checkValidationLayerSupport() {
   uint32_t layerCount;
   vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -87,6 +99,7 @@ std::vector<const char *> Device::getRequiredExtensions() {
 
   if (enableValidationLayers) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    extensions.push_back("VK_KHR_surface");
   }
 
   return extensions;
@@ -143,9 +156,22 @@ void Device::initVulkan(){
     setupDebugMessenger();
     pickPhysicalDevice(); 
     createLogicalDevice();
+    createSurface();
     
     
 }
+
+void Device::createSurface(){
+
+  //TODO: create surface (XCB (ballache) or figure out workaround)
+
+  if(glfwCreateWindowSurface(_instance,_window->getwindow(),NULL,&_surface)!= VK_SUCCESS){
+    _debug->log("Surface Not Created");
+  }else{
+    _debug->log("Surface Successfully created");
+  }
+}
+
 
 void Device::createLogicalDevice(){
     QueueFamilyIndices indices = findQueueFamilies(_physicalDevice); //finds the queue families of the assigned physical device
@@ -198,7 +224,7 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device) {
   vkGetPhysicalDeviceQueueFamilyProperties(device, &queueCount, nullptr); //get amount of queue families supported
 
   std::vector<VkQueueFamilyProperties> properties(queueCount); //create vector to hold them
-  //vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, properties.data()); //write them into vector
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueCount, properties.data()); //write them into vector
 
   uint32_t i = 0;
   for(const auto & property : properties){
@@ -256,14 +282,17 @@ void Device::pickPhysicalDevice(){
 }
 
 
-Device::Device(){
-    initVulkan();
-}
 
 void Device::cleanup(){
     
     _debug = nullptr;
     vkDestroyDevice(_device, nullptr);
+    
+    if(enableValidationLayers){
+      DestroyDebugUtilsMessengerEXT(_instance,debugMessenger,nullptr);
+    }
+
+
     vkDestroyInstance(_instance, NULL);
 }
 
