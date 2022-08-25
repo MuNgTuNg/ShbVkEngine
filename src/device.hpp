@@ -1,11 +1,18 @@
 #pragma once
 #include <string>
 #include <vulkan/vulkan.hpp>
-#define VK_USE_PLATFORM_XCB
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-//#define GLFW_EXPOSE_NATIVE_X11
-#include <GLFW/glfw3native.h>
+
+#define UNIX_BUILD
+
+#ifdef UNIX_BUILD
+  #define VK_USE_PLATFORM_XCB
+  #define GLFW_INCLUDE_VULKAN
+  #include <GLFW/glfw3.h>
+  //#define GLFW_EXPOSE_NATIVE_X11
+  #include <GLFW/glfw3native.h>
+#endif
+
+
 
 #include <iostream>
 #include <vector> 

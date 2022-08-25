@@ -153,22 +153,42 @@ void Device::createInstance() {
 void Device::initVulkan(){
     createInstance();
     setupDebugMessenger();
+    createSurface();
     pickPhysicalDevice(); 
     createLogicalDevice();
-    createSurface();
+    
     
     
 }
 
 void Device::createSurface(){
 
-  //TODO: create surface (XCB (ballache) or figure out workaround)
+  //TODO: create surface (XCB (ballache???) )
+  // #ifdef UNIX_BUILD
+  //   VkXcbSurfaceCreateInfoKHR();
+  
 
-  if(glfwCreateWindowSurface(_instance,_window->getwindow(),NULL,&_surface)!= VK_SUCCESS){
-    _debug->log("Surface Not Created");
+
+  //   VkResult vkCreateXcbSurfaceKHR(
+  //   VkInstance                                  instance,
+  //   const VkXcbSurfaceCreateInfoKHR*            pCreateInfo,
+  //   const VkAllocationCallbacks*                pAllocator,
+  //   VkSurfaceKHR*                               pSurface);
+  // #endif
+
+  // #ifdef WINDOWS_BUILD
+  //   //windows surface creation
+  // #endif
+  
+  //surely it can't be this easy?
+  auto msg = glfwCreateWindowSurface(_instance,_window->getwindow(),NULL,&_surface);
+  if(msg){
+    _debug->log("Surface creation success");
   }else{
-    _debug->log("Surface Successfully created");
+    _debug->log("surface creation failed");
   }
+ 
+  
 }
 
 
@@ -291,7 +311,7 @@ void Device::cleanup(){
       DestroyDebugUtilsMessengerEXT(_instance,debugMessenger,nullptr);
     }
 
-
+    vkDestroySurfaceKHR(_instance, _surface, nullptr);
     vkDestroyInstance(_instance, NULL);
 }
 
