@@ -31,9 +31,9 @@ class App
    void cleanup();
 
 
-   Device* _device = new Device(_window); //App outlives device
+   sDevice* _device = new sDevice(_window); //App outlives device
 
-   Window* _window;
+   sWindow* _window;
    const int HEIGHT = 1000;
    const int WIDTH = 1000;
    const std::string& TITLE = "Vulkan Window";

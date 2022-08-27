@@ -1,86 +1,67 @@
 #pragma once
-#include <string>
-#include <vulkan/vulkan.hpp>
+#include <vector>
+#include "window.hpp"
+#include <cstring>
+#include "shb_debug.hpp"
 
-#define UNIX_BUILD
+namespace shb{
 
-#ifdef UNIX_BUILD
-  #define VK_USE_PLATFORM_XCB
-  #define GLFW_INCLUDE_VULKAN
-  #include <GLFW/glfw3.h>
-  //#define GLFW_EXPOSE_NATIVE_X11
-  #include <GLFW/glfw3native.h>
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
 #endif
 
 
 
-#include <iostream>
-#include <vector> 
-#include <cstring>
+struct QueueFamilyIndices{
+  int graphicsFamily;
+  int presentFamily;
+  bool gfxFamilyHasValue = false;
+  bool presentFamilyHasValue = false;
 
-#include "shb_debug.hpp"
-#include "window.hpp"
-namespace shb{
-
-struct QueueFamilyIndices {
-  uint32_t graphicsFamily;
-  uint32_t presentFamily;
-  bool graphicsFamilyHasValue;
-  bool presentFamilyHasValue;
-  
-  bool isComplete() { return graphicsFamilyHasValue; /*&& presentFamilyHasValue;*/ } //essentially searching for all queues specified, 
-                                                                                     //represented by indeces
+  bool isComplete() {
+    return gfxFamilyHasValue && presentFamilyHasValue;
+  }
 };
- 
 
-const bool enableValidationLayers = true;
+class sDevice{
+ public:
+  sDevice(sWindow* window) : _window(window) {
+    initVulkan();
+  }
+  ~sDevice();
+  
+  void setupDebugMessenger();
+  void createInstance();
+  void initVulkan();
+  void pickPhysicalDevice();
+  void createLogicalDevice();
+  void createSurface();
 
-
-class Device{
- public:   
-    Device() = delete;
-    Device(Window* w) : _window(w) {
-      initVulkan();
-    }
-    ~Device();
-    
-
+  bool isDeviceSuitable(VkPhysicalDevice& device);
 
  private:
-    void cleanup();
-
-    void initVulkan();
-    void createInstance();
-    void pickPhysicalDevice();
-    void createLogicalDevice();
-    void createSurface();
-
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice);
-    bool isDeviceSuitable(VkPhysicalDevice);
-    void setupDebugMessenger();
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT&);
-    bool checkValidationLayerSupport();
-    std::vector<const char *> getRequiredExtensions();
+  VkInstance _instance;
+  sWindow* _window;
+  VkPhysicalDevice _gpu;
+  VkDevice _device;
+  VkSurfaceKHR _surface;
+  VkDebugUtilsMessengerEXT debugMessenger;
 
 
-    VkPhysicalDevice _physicalDevice{}; //= VK_NULL_HANDLE;
-    VkQueueFamilyProperties _queueFamProps;
+  
 
-    VkDevice _device;
-    VkInstance _instance;
-    ShbDebug* _debug = new ShbDebug();
-    VkQueue graphicsQueue;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkSurfaceKHR _surface;
 
-    Window* _window;
-    std::vector<const char*> _extensions{};
-    
-    static const int NUM_QUEUES = 2;
-    VkDeviceQueueCreateInfo deviceQueues[NUM_QUEUES];
+const std::vector<const char*> validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
 
-    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    
+
+
+
+  
+
 };
 
 }//namespace shb

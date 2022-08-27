@@ -7,7 +7,7 @@ namespace shb{
 
 
 void App::run(){
-    while(!glfwWindowShouldClose(_window->getwindow())){
+    while(!glfwWindowShouldClose(_window->getWindow())){
         glfwWaitEvents();
     }
 }
@@ -21,7 +21,7 @@ App::App(){
 
 
 void App::createWindow(){
-    _window = new Window(HEIGHT,WIDTH,TITLE);
+    _window = new sWindow(HEIGHT,WIDTH,TITLE);
 }
 
 
@@ -32,7 +32,7 @@ void App::createWindow(){
 void App::cleanup()
 {
     _window = nullptr;
-    _device = nullptr;
+    //_device = nullptr;
 
 }
 App::~App(){

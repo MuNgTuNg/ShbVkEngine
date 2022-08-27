@@ -1,24 +1,17 @@
-
 #include "window.hpp"
-#include <string>
+namespace shb{
 
-Window::Window(int width, int height, const std::string& title) : _width(width), _height(height), _title(title){
-  
+void sWindow::initWindow(int height, int width, const std::string& title){
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    _window = glfwCreateWindow(height, width, title.c_str(), NULL, NULL);
 
-    _window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-    
+  
 }
-Window::~Window(){
+
+sWindow::~sWindow(){
     glfwDestroyWindow(_window);
     glfwTerminate();
 }
 
-
-
-void Window::changeWindowSize(int width, int height, Window& window) 
-{
-   
-}
+}//namespace shb
