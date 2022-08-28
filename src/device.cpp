@@ -30,6 +30,7 @@ std::vector<const char*> getRequiredExtensions() {
 
     if (enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        //extensions.push_back("VK_KHR_surface");
     }
 
     return extensions;
@@ -105,8 +106,9 @@ void sDevice::setupDebugMessenger() {
   void sDevice::initVulkan() {
     createInstance();
     setupDebugMessenger();
+    _window.createSurface(_instance, &_surface);
     pickPhysicalDevice();
-    createSurface();
+    
     createLogicalDevice();
 
   }
@@ -194,13 +196,24 @@ void sDevice::setupDebugMessenger() {
 
   void sDevice::createLogicalDevice() { //TODO finish device setup
 
+    QueueFamilyIndices indeces = findQueueFamilies(_gpu);
+
+    VkPhysicalDeviceFeatures features{};
+
     VkDeviceQueueCreateInfo queCreateInfo {};
+    queCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queCreateInfo.queueFamilyIndex = indeces.graphicsFamily;
+    queCreateInfo.queueCount = 1;
+    float priorities = 1.0f;
+    queCreateInfo.pQueuePriorities = &priorities;
+    queCreateInfo.pNext = nullptr;
     
     VkDeviceCreateInfo devCreateInfo {};
     devCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    //devCreateInfo.pQueueCreateInfos =
-    //devCreateInfo.queueCreateInfoCount =
-    //devCreateInfo.pEnabledFeatures = 
+    devCreateInfo.pQueueCreateInfos = &queCreateInfo;
+    devCreateInfo.queueCreateInfoCount = 1;
+    devCreateInfo.pEnabledFeatures = &features;
+    devCreateInfo.enabledExtensionCount = 0;
     
 
     if(vkCreateDevice(_gpu,&devCreateInfo,nullptr,&_device)!= VK_SUCCESS){
@@ -208,12 +221,14 @@ void sDevice::setupDebugMessenger() {
     }else{
       std::cout<<"Device creation success\n";
     }
+
+    vkGetDeviceQueue(_device,indeces.graphicsFamily, 0, &_graphicsQueue);
   }
 
 
-  void sDevice::createSurface() {}
+  
 
-  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device){
+  QueueFamilyIndices sDevice::findQueueFamilies(VkPhysicalDevice device){
     QueueFamilyIndices QFI;
 
     uint32_t queueCount = 0;
@@ -245,9 +260,12 @@ void sDevice::setupDebugMessenger() {
   }
 
 sDevice::~sDevice(){
+
+  vkDestroyDevice(_device,nullptr);
   if (enableValidationLayers) {
     DestroyDebugUtilsMessengerEXT(_instance, debugMessenger, nullptr);
   }
+  vkDestroySurfaceKHR(_instance,_surface, nullptr);
   vkDestroyInstance(_instance, nullptr);
 
 }

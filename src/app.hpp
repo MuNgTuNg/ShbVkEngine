@@ -27,16 +27,15 @@ class App
     
 
  private:
-   void createWindow();
    void cleanup();
 
-
-   sDevice* _device = new sDevice(_window); //App outlives device
-
-   sWindow* _window;
+   
    const int HEIGHT = 1000;
    const int WIDTH = 1000;
    const std::string& TITLE = "Vulkan Window";
+   sWindow _window{HEIGHT,WIDTH,TITLE};
+
+   sDevice _device{_window};
 
 
    

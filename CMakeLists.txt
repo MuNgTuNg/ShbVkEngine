@@ -95,14 +95,14 @@ if (WIN32)
     ${GLFW_LIB}
   )
 
-  target_link_libraries(${PROJECT_NAME} glfw vulkan-1)
+  target_link_libraries(${PROJECT_NAME} glfw vulkan-1 )
 elseif (UNIX)
     message(STATUS "CREATING BUILD FOR UNIX")
     target_include_directories(${PROJECT_NAME} PUBLIC
       ${PROJECT_SOURCE_DIR}/src
       ${TINYOBJ_PATH}
     )
-    target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} glfw ${Vulkan_LIBRARIES} X11 pthread Xxf86vm Xrandr Xi)
 endif()
 
 

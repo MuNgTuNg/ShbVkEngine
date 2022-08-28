@@ -27,9 +27,12 @@ struct QueueFamilyIndices{
 
 class sDevice{
  public:
-  sDevice(sWindow* window) : _window(window) {
+  sDevice(sWindow& window) : _window(window){ 
+    
     initVulkan();
-  }
+    }
+    
+  
   ~sDevice();
   
   void setupDebugMessenger();
@@ -37,19 +40,22 @@ class sDevice{
   void initVulkan();
   void pickPhysicalDevice();
   void createLogicalDevice();
-  void createSurface();
+  
 
   bool isDeviceSuitable(VkPhysicalDevice& device);
 
  private:
+  
+  sWindow& _window;
   VkInstance _instance;
-  sWindow* _window;
   VkPhysicalDevice _gpu;
   VkDevice _device;
   VkSurfaceKHR _surface;
+
   VkDebugUtilsMessengerEXT debugMessenger;
 
-
+  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+  VkQueue _graphicsQueue;
   
 
 
