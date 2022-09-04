@@ -7,6 +7,7 @@
 
 #include "device.hpp"
 #include "window.hpp"
+#include "sRenderer.h"
 //std
 #include <iostream>
 
@@ -36,7 +37,7 @@ class App
    sWindow _window{HEIGHT,WIDTH,TITLE};
 
    sDevice _device{_window};
-
+   sRenderer _renderer{_window, _device};
 
    
     

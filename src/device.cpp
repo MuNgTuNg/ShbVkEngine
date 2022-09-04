@@ -15,7 +15,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    std::cerr << "\nvalidation layer: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }
@@ -194,7 +194,7 @@ void sDevice::setupDebugMessenger() {
   }
 
 
-  void sDevice::createLogicalDevice() { //TODO finish device setup
+  void sDevice::createLogicalDevice() { 
 
     QueueFamilyIndices indeces = findQueueFamilies(_gpu);
 
@@ -213,7 +213,8 @@ void sDevice::setupDebugMessenger() {
     devCreateInfo.pQueueCreateInfos = &queCreateInfo;
     devCreateInfo.queueCreateInfoCount = 1;
     devCreateInfo.pEnabledFeatures = &features;
-    devCreateInfo.enabledExtensionCount = 0;
+    devCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    devCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
     
 
     if(vkCreateDevice(_gpu,&devCreateInfo,nullptr,&_device)!= VK_SUCCESS){
@@ -236,16 +237,33 @@ void sDevice::setupDebugMessenger() {
     std::vector<VkQueueFamilyProperties> properties(queueCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device,&queueCount,properties.data());
     
+  
     int i = 0;
-    for(auto property : properties){
-      if(property.queueFlags & VK_QUEUE_GRAPHICS_BIT){
+    for(const auto& property : properties){
+
+      VkBool32 presentSupported;
+      vkGetPhysicalDeviceSurfaceSupportKHR(device,i,_surface,&presentSupported);
+
+      if(property.queueCount > 0 && property.queueFlags & VK_QUEUE_GRAPHICS_BIT){
         QFI.graphicsFamily = i;
+        QFI.queueArray.push_back(i);
         QFI.gfxFamilyHasValue = true;
+        
+      }
+      if(property.queueCount > 0 && presentSupported){
+        QFI.presentFamily = i;
+        QFI.presentFamilyHasValue = true;
+        
+
+      }
+      
+      if(QFI.isComplete()){
+        break;
       }
       i++;
+      
     }
-    QFI.presentFamilyHasValue = true; //not true, temperary
-
+    QFI.totalQueues = i;
     return QFI;
 
   }

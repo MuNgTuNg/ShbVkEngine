@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <string> 
 
+#include "sSwapchain.h"
+
 namespace shb{
 class sWindow{
  public:
@@ -27,6 +29,7 @@ class sWindow{
    std::string _title;
    GLFWwindow* _window;
    VkSurfaceKHR _surface;
+   
 
 };
 
