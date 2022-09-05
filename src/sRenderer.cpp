@@ -13,4 +13,8 @@ sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _devic
     createSwapchain();
 }
 
+sRenderer::~sRenderer(){
+    vkDestroySwapchainKHR(_device.getDevice(), _swapchain.getSwapchain(),nullptr);
+}
+
 }//namespace shb

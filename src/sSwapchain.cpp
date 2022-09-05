@@ -28,10 +28,15 @@ void sSwapchain::createSwapchain(){
     
     
     for(const auto& format : formats){
-       if(format.format == VK_FORMAT_R8G8B8_SRGB && format.colorSpace== VK_COLOR_SPACE_SRGB_NONLINEAR_KHR )
-       std::cout<<"\n\nfuck\n\n";
+        
+       if(format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR  ){
        createInfo.imageFormat = format.format;
+       std::cout<< "Image format: " << "VK_FORMAT_B8G8R8A8_SRGB\n";
        createInfo.imageColorSpace = format.colorSpace;
+        std::cout<< "Color space: " << "VK_COLOR_SPACE_SRGB_NONLINEAR_KHR\n";
+        break;
+       }
+       
     }
     
 
@@ -59,7 +64,7 @@ void sSwapchain::createSwapchain(){
         
     }
 
-    createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    createInfo.presentMode = _presentMode;
 
     createInfo.clipped = VK_TRUE;
     if(_oldSwapchain == nullptr){
@@ -73,6 +78,12 @@ void sSwapchain::createSwapchain(){
     }else{
         std::cout<<"Created swapchain\n";
     }
+    
+    uint32_t imageCount;
+    vkGetSwapchainImagesKHR(_device.getDevice(),_swapchain,&imageCount,nullptr);
+    _swapchainImages.resize(image_count);
+    vkGetSwapchainImagesKHR(_device.getDevice(),_swapchain,&imageCount,_swapchainImages.data());
+    std::cout<< "Swapchain Images: " << _swapchainImages.size() << std::endl;
     
 }
 
