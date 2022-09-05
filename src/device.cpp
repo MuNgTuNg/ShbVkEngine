@@ -248,6 +248,7 @@ void sDevice::setupDebugMessenger() {
         QFI.graphicsFamily = i;
         QFI.queueArray.push_back(i);
         QFI.gfxFamilyHasValue = true;
+        i++; //for concurrency, queue family indeces must be different
         
       }
       if(property.queueCount > 0 && presentSupported){
