@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string> 
 
-#include "sSwapchain.h"
+#include "sSwapchain.hpp"
 
 namespace shb{
 class sWindow{
