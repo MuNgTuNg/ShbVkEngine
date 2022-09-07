@@ -1,8 +1,8 @@
 #pragma once
 
 #include "sSwapchain.h"
-#include "window.hpp"
-#include "device.hpp"
+#include "sWindow.hpp"
+#include "sDevice.hpp"
 
 namespace shb{
 

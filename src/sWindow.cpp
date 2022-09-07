@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include "sWindow.hpp"
 #include <iostream>
 namespace shb{
 

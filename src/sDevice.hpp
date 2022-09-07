@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "window.hpp"
+#include "sWindow.hpp"
 #include <cstring>
 #include "shb_debug.hpp"
 
@@ -15,17 +15,18 @@ namespace shb{
 
 
 struct QueueFamilyIndices{
-  uint32_t graphicsFamily;
-  uint32_t presentFamily;
-  bool gfxFamilyHasValue = false;
-  bool presentFamilyHasValue = false;
+  uint32_t graphicsFamily;             //index of queue family on device that supports graphical commands
+  uint32_t presentFamily;              //index of queue family on device that supports presenting to screen
+  bool gfxFamilyHasValue = false;      //boolean indicating that a value has been assigned to graphicsFamily index
+  bool presentFamilyHasValue = false;  //boolean indicating that a value has been assigned to presentFamily index
 
   bool isComplete() {
-    return gfxFamilyHasValue && presentFamilyHasValue;
+    return gfxFamilyHasValue && presentFamilyHasValue;  //we have completed a search for queue family indeces
+                                                        //as all indexes have been assigned to
   }
 
-  int totalQueues =0 ;
-  std::vector<int> queueArray;
+  int totalQueues =0 ;         //indicates the amount of queues added in in total
+  std::vector<int> queueIndicesArray; 
 };
 class sWindow;
 
@@ -44,6 +45,7 @@ class sDevice{
   void initVulkan();
   void pickPhysicalDevice();
   void createLogicalDevice();
+  bool checkValidationLayerSupport();
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
   bool isDeviceSuitable(VkPhysicalDevice& device);
@@ -74,6 +76,7 @@ const std::vector<const char*> deviceExtensions = {
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
+
 
 
 

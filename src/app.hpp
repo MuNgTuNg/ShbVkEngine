@@ -5,9 +5,9 @@
 //shb
 
 
-#include "device.hpp"
-#include "window.hpp"
-#include "sRenderer.h"
+#include "sDevice.hpp"
+#include "sWindow.hpp"
+#include "sRenderer.hpp"
 //std
 #include <iostream>
 

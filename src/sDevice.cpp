@@ -1,12 +1,9 @@
 
-#include "device.hpp"
+#include "sDevice.hpp"
 #include <cstring>
 namespace shb{
 
 
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
-};
 
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -24,20 +21,20 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 std::vector<const char*> getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount); //get glfw's necessary extensions then.. 
 
-    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount); //add them to a vector 
 
     if (enableValidationLayers) {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        //extensions.push_back("VK_KHR_surface");
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);  //debug utils is an instance level extension, always use macro instead of actual string as allows for easier updates 
+        //extensions.push_back("VK_KHR_surface");                 // surface is a device level extension i think?
     }
 
-    return extensions;
+    return extensions;                                            //return vector to be used externally
 }
 
 
-bool checkValidationLayerSupport() {
+bool sDevice::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -228,52 +225,55 @@ void sDevice::setupDebugMessenger() {
 
 
   
-
+ //retrieves and returns a struct holding the indices of the queue families on the device 
   QueueFamilyIndices sDevice::findQueueFamilies(VkPhysicalDevice device){
-    QueueFamilyIndices QFI;
+    QueueFamilyIndices QFI;  //tuple like data structure
 
+  //query queue family properties
     uint32_t queueCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device,&queueCount,nullptr);
     std::vector<VkQueueFamilyProperties> properties(queueCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device,&queueCount,properties.data());
+
     
-  
-    int i = 0;
-    for(const auto& property : properties){
+  //run through properties and check for desired properties stored in VkQueueFamilyProperties object 
+    int i = 0;                                                                    //set index variable to 0
+    for(const auto& property : properties){                                       //loop through each property
 
-      VkBool32 presentSupported;
-      vkGetPhysicalDeviceSurfaceSupportKHR(device,i,_surface,&presentSupported);
+      VkBool32 presentSupported; //boolean returned to query for surface support
+      vkGetPhysicalDeviceSurfaceSupportKHR(device,i,_surface,&presentSupported); //does the queue at index i support presentation?
 
-      if(property.queueCount > 0 && property.queueFlags & VK_QUEUE_GRAPHICS_BIT){
-        QFI.graphicsFamily = i;
-        QFI.queueArray.push_back(i);
-        QFI.gfxFamilyHasValue = true;
+      if(property.queueCount > 0 && property.queueFlags & VK_QUEUE_GRAPHICS_BIT){ //if supports more than 0 queues and has a queue flag of VK_QUEUE_GRAPHICS_BIT (supports graphics)
+        QFI.graphicsFamily = i;                                                      //set graphics family index to the current iteration's index value
+        QFI.queueIndicesArray.push_back(i);                                          //add to vector of queueIndeces
+        QFI.gfxFamilyHasValue = true;                                                //change boolean to say that graphicsFamily index has been assigned to
         i++; //for concurrency, queue family indeces must be different
         
       }
-      if(property.queueCount > 0 && presentSupported){
-        QFI.presentFamily = i;
+      if(property.queueCount > 0 && presentSupported){                            //if supports more than 0 queues and the queue that is on the current index supports a physical device surface 
+        QFI.presentFamily = i;                                                    //same process as last time, just with present family
+        QFI.queueIndicesArray.push_back(i);
         QFI.presentFamilyHasValue = true;
-        
-
+        i++;
       }
       
-      if(QFI.isComplete()){
+      if(QFI.isComplete()){                                                       //if we have fullfilled our requirements, break from for loop
         break;
       }
-      i++;
+      i++;                                                                        //if not, loop over again with the queue index advanced by 1
       
     }
-    QFI.totalQueues = i;
-    return QFI;
+    QFI.totalQueues = i;                                                          //totalQueues could be replaced by queueArray.size(), returns the number of times loop was iterated through not how many there were
+    return QFI;                                                                   //return object
 
   }
 
+//choose what features  we want from the device and assign a device based on suitability
   bool sDevice::isDeviceSuitable(VkPhysicalDevice& device) {
 
-    QueueFamilyIndices QFI = findQueueFamilies(device);
+    QueueFamilyIndices QFI = findQueueFamilies(device);     //locate queue families on device, found through retrieving an index that is used as a handle for that queue
     
-    return QFI.isComplete();
+    return QFI.isComplete();                                //query completion of retrieval of desired queues and signals that a suitable device was found if complete
 
 
   }
@@ -282,9 +282,9 @@ sDevice::~sDevice(){
 
   vkDestroyDevice(_device,nullptr);
   if (enableValidationLayers) {
-    DestroyDebugUtilsMessengerEXT(_instance, debugMessenger, nullptr);
+    DestroyDebugUtilsMessengerEXT(_instance, debugMessenger, nullptr);     //debug must be destroyed before the instance as it relies on it
   }
-  vkDestroySurfaceKHR(_instance,_surface, nullptr);
+  vkDestroySurfaceKHR(_instance,_surface, nullptr);      
   vkDestroyInstance(_instance, nullptr);
 
 }
