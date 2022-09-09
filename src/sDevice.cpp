@@ -118,14 +118,13 @@ void sDevice::setupDebugMessenger() {
     }
 
 
-
+  //get extensions list from glfw
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
-
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 
-    
+  //set information about application
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Application 1";
@@ -133,10 +132,13 @@ void sDevice::setupDebugMessenger() {
     appInfo.pEngineName = "ShbVkEngine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_3;
-    
+  
+  //set information about instance
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
+
+  //acquire vector of necessary extensions and add any extras to a vector
     auto extensions = getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
@@ -170,19 +172,19 @@ void sDevice::setupDebugMessenger() {
   void sDevice::pickPhysicalDevice() {
 
     uint32_t pdCount=0;
-    vkEnumeratePhysicalDevices(_instance,&pdCount, nullptr);
+    vkEnumeratePhysicalDevices(_instance,&pdCount, nullptr);  //enumerate devices
 
     std::vector<VkPhysicalDevice> devices(pdCount);
-    vkEnumeratePhysicalDevices(_instance,&pdCount,devices.data());
+    vkEnumeratePhysicalDevices(_instance,&pdCount,devices.data());   //populate vector of devices
 
-    for(auto device : devices){
-      if(isDeviceSuitable(device)){
-        _gpu = device;
+    for(auto device : devices){     //for all devices
+      if(isDeviceSuitable(device)){ //do abstracted suitability checks
+        _gpu = device;              //if criterea met assign handle to chosen device
         break;
       }
     }
-    if(_gpu == VK_NULL_HANDLE){
-      std::cout<<"Unable to find a GPU\n";
+    if(_gpu == VK_NULL_HANDLE){     //if not found
+      std::cout<<"Unable to find a GPU\n"; //complain
     }else{
       std::cout<<"Found suitable GPU!\n";
     }
@@ -192,25 +194,29 @@ void sDevice::setupDebugMessenger() {
 
 
   void sDevice::createLogicalDevice() { 
+  
+  //ask device about indexes of the queue families
+    QueueFamilyIndices indeces = findQueueFamilies(_gpu);    //retrieve struct with details of the queue family's indexed locations on the gpu
 
-    QueueFamilyIndices indeces = findQueueFamilies(_gpu);
+  //activate GPU features
+    VkPhysicalDeviceFeatures features{};        //struct full of booleans to enable features
 
-    VkPhysicalDeviceFeatures features{};
-
+  //info on queues
     VkDeviceQueueCreateInfo queCreateInfo {};
     queCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queCreateInfo.queueFamilyIndex = indeces.graphicsFamily;
-    queCreateInfo.queueCount = 1;
-    float priorities = 1.0f;
-    queCreateInfo.pQueuePriorities = &priorities;
-    queCreateInfo.pNext = nullptr;
-    
+    queCreateInfo.queueFamilyIndex = indeces.graphicsFamily;  //index of graphics family
+    queCreateInfo.queueCount = 1;                             //single queue
+    float priorities = 1.0f;                                  //higher priority means it gets chosen over other queues with lower priority on a scale of 0.0...1.0
+    queCreateInfo.pQueuePriorities = &priorities;            
+    queCreateInfo.pNext = nullptr;    
+  
+  //info used to create device specifically
     VkDeviceCreateInfo devCreateInfo {};
     devCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     devCreateInfo.pQueueCreateInfos = &queCreateInfo;
     devCreateInfo.queueCreateInfoCount = 1;
-    devCreateInfo.pEnabledFeatures = &features;
-    devCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    devCreateInfo.pEnabledFeatures = &features;                                             
+    devCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());  //vector of extensions class member
     devCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
     
 
@@ -220,7 +226,7 @@ void sDevice::setupDebugMessenger() {
       std::cout<<"Device creation success\n";
     }
 
-    vkGetDeviceQueue(_device,indeces.graphicsFamily, 0, &_graphicsQueue);
+    vkGetDeviceQueue(_device,indeces.graphicsFamily, 0, &_graphicsQueue);  //assign handle for graphics queue to the member variable _graphicsQueue
   }
 
 
