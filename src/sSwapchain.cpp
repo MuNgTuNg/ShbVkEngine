@@ -54,13 +54,13 @@ void sSwapchain::createSwapchain(){
     createInfo.minImageCount = surfaceCapabilities.minImageCount +1;                                //minimum count of swapchain is the minimum the surface can support plus one
     
     createInfo.imageExtent = surfaceCapabilities.currentExtent;                                     //potential problem if i remember correctly, image extent is set to surfaces image extent
-    createInfo.imageArrayLayers = 1;                                                                //image array has one layer (research)
+    createInfo.imageArrayLayers = 1;                                                                //image array has one layer (images are represented as arrays apparantlu)
     createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;                                       //more than one queue
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;                                    //is being used to write color to the screen (research)
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;                                    //is being used to write color to the screen 
     createInfo.queueFamilyIndexCount = QFI.queueIndicesArray.size();                                //total indices being used                                   
     createInfo.pQueueFamilyIndices = QFIindeces;                                                    //array of indeces being used
     createInfo.preTransform = surfaceCapabilities.currentTransform;                                 //pre transformation of screen
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;                                  //(research)
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;                                  //composite alpha is how the opacity of pixels(texels?) is processed
 
   //choose present mode (just the first one i see; sort of crude)
     // for(const auto& modes : presentModes){      
@@ -101,36 +101,53 @@ void sSwapchain::createSwapchain(){
 void sSwapchain::createImageViews(){
 
    
-    swapChainImageViews.resize(_swapchainImages.size());
-    for(int i =0 ; i<_swapchainImages.size(); ++i){
+    swapChainImageViews.resize(_swapchainImages.size()); //resize member variable for the swapchain image views to hold an image view for every image
+    for(int i =0 ; i<_swapchainImages.size(); ++i){      //for each image (image views and images have the same size vector)
       //todo:: fill out struct
         // VkImageCreateInfo imageCreateInfo{};
         // imageCreateInfo.imageType = VK_IMAGE_TYPE_3D;
 
-        // vkCreateImage(_device.getDevice(),&imageCreateInfo,nullptr,&_swapchainImages[i]);
+        // vkCreateImage(_device.getDevice(),&imageCreateInfo,nullptr,&_swapchainImages[i]);  //todo need to fill this in and create an actual image so that i can create a 3d image view 
+      
+      //create resource range
+        VkImageSubresourceRange resourceRange{};   
+        resourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // Aspect: Images can hold various types of data, in Vulkan either color 
+                                                              // (the type of image you'd normally think of), depth (where the image represents 
+                                                              // the distance from the camera to objects in the scene), and stencil (a bitmap that 
+                                                              // can be used for any purpose). The aspect indicates how it's meant to be used and what type 
+                                                              // of data it contains.
 
-        VkImageSubresourceRange resourceRange{};
-        resourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        resourceRange.baseMipLevel = 0;
-        resourceRange.baseArrayLayer =0;
-        resourceRange.layerCount = 1;
         resourceRange.levelCount = 1;
+        resourceRange.baseMipLevel = 0; //mip level is essentially downscaling an image e.g miplevel 0 would be 480x480 pixels,  
+                                        //but mip level 1 would be 240x240, mip level 2 would be 120x120#
+                                        //baseMipLevel is the first mip level being used
+                                        //levelCount is the total mip layers being used starting from 0
 
-        VkComponentMapping components{};
+        resourceRange.baseArrayLayer =0;//Layer: Images in Vulkan can actually be an array of images, called layers
+        resourceRange.layerCount = 1;   //six length texture array. Typically texture arrays simply let you bind 
+                                        //one image to N draws that consume some subset of those layers. Because 
+                                        //many textures for a given game are sized similarly in a given scene and 
+                                        //material, packing those textures and binding once is a performance win.
+                                        //baseArrayLayer & layerCount work as the miplevel and levelcount work
+        
+      
+      //set components swizzles
+        VkComponentMapping components{};              //investigate further (research)
         components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
         components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
         components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = _swapchainImages[i];
-        
+       //struct used to create image view
+        VkImageViewCreateInfo createInfo{};                          
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;  
+        createInfo.image = _swapchainImages[i];      //index of image in vector that is having image view constructed for it
         createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; //will make 3D soon 
-        createInfo.format = _format;
+        createInfo.format = _format;                 //format is the format of the images (e.g VK_FORMAT_B8G8R8A8_SRGB)
         createInfo.components = components;
         createInfo.subresourceRange =  resourceRange;
-
+      
+      //create single image view for indexed image
         if(vkCreateImageView(_device.getDevice(),&createInfo,nullptr,&swapChainImageViews[i]) != VK_SUCCESS){
             std::cout<<"Failed to create image view\n";
         }else{
