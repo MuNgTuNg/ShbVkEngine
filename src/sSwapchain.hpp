@@ -14,6 +14,8 @@
 
 
 namespace shb{
+
+
 class sDevice;
 class sSwapchain{
  public:
@@ -22,6 +24,8 @@ class sSwapchain{
     void createSwapchain();
     void createImageViews();
     VkSwapchainKHR getSwapchain() { return _swapchain;}
+    VkFormat getFormat() { return _format; }
+    std::vector<VkImageView>& getImageViews() { return swapChainImageViews;}
     
 
     VkSwapchainKHR _swapchain;

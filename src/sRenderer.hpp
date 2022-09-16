@@ -6,6 +6,9 @@
 
 namespace shb{
 
+// • Renderer class holds the pieces of vulkan used for drawing the actual images and sending them to the screen
+
+
 class sRenderer{
  public:
    sRenderer(sWindow& window,sDevice& device );
@@ -17,8 +20,8 @@ class sRenderer{
    sWindow& _window;
    sDevice& _device;
    sSwapchain _swapchain{_device};
-   std::vector<VkImageView> imageViews;
    VkPipeline _pipeline;
+   VkRenderPass _renderPass;
    
 
 };
