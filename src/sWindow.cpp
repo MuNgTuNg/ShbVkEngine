@@ -15,9 +15,9 @@ void sWindow::initWindow(int height, int width, const std::string& title){
 void sWindow::createSurface(VkInstance _instance, VkSurfaceKHR* _surface) {
 
      if(glfwCreateWindowSurface(_instance,_window,nullptr,_surface)!= VK_SUCCESS){
-      std::cout<<"Surface creation failed\n";
+      sDebug::Print("Surface creation failed");
     }else{
-      std::cout<<"Surface creation success\n";
+      sDebug::Print("Surface creation success");
     }
   }
 

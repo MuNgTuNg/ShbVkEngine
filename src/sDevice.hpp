@@ -2,7 +2,7 @@
 #include <vector>
 #include "sWindow.hpp"
 #include <cstring>
-#include "shb_debug.hpp"
+#include "sDebug.hpp"
 
 namespace shb{
 

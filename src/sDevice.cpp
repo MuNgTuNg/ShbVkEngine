@@ -1,6 +1,7 @@
 
 #include "sDevice.hpp"
 #include <cstring>
+
 namespace shb{
 
 
@@ -161,9 +162,9 @@ void sDevice::setupDebugMessenger() {
 
   
     if(vkCreateInstance(&createInfo,nullptr,&_instance)== VK_SUCCESS){
-      std::cout<<"Successfully created Instance\n";
+      sDebug::Print("Successfully created Instance");
     }else{
-      std::cout<<"Failed to create instance\n";
+      sDebug::Print("Failed to create Instance");
     }
   }
 
@@ -184,9 +185,9 @@ void sDevice::setupDebugMessenger() {
       }
     }
     if(_gpu == VK_NULL_HANDLE){     //if not found
-      std::cout<<"Unable to find a GPU\n"; //complain
+      sDebug::Print("Unable to find a GPU"); //complain
     }else{
-      std::cout<<"Found suitable GPU!\n";
+      sDebug::Print("Found suitable GPU!");
     }
 
 
@@ -221,9 +222,9 @@ void sDevice::setupDebugMessenger() {
     
 
     if(vkCreateDevice(_gpu,&devCreateInfo,nullptr,&_device)!= VK_SUCCESS){
-      std::cout<<"Device creation failed\n";
+      sDebug::Print("Device creation failed");
     }else{
-      std::cout<<"Device creation success\n";
+      sDebug::Print("Device creation success");
     }
 
     vkGetDeviceQueue(_device,indeces.graphicsFamily, 0, &_graphicsQueue);  //assign handle for graphics queue to the member variable _graphicsQueue

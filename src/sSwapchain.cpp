@@ -38,9 +38,9 @@ void sSwapchain::createSwapchain(){
        if(format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR  ){ //do you support x and y?
        createInfo.imageFormat = format.format;
        _format = format.format;                                                                   //if so i want to use them
-       std::cout<< "Image format: " << "VK_FORMAT_B8G8R8A8_SRGB\n";
+       sDebug::Print( "Image format: VK_FORMAT_B8G8R8A8_SRGB");
        createInfo.imageColorSpace = format.colorSpace;
-        std::cout<< "Color space: " << "VK_COLOR_SPACE_SRGB_NONLINEAR_KHR\n";
+        sDebug::Print( "Color space:  VK_COLOR_SPACE_SRGB_NONLINEAR_KHR");
         break;
        }
        
@@ -83,9 +83,9 @@ void sSwapchain::createSwapchain(){
     
   //create swapchain
     if(vkCreateSwapchainKHR(_device.getDevice(),&createInfo,nullptr,&_swapchain) != VK_SUCCESS){
-        std::cout<<"Failed to create swapchain\n";
+        sDebug::Print("Failed to create swapchain");
     }else{
-        std::cout<<"Created swapchain\n";
+        sDebug::Print("Created swapchain");
     }
     
   //gather images from swapchain
@@ -93,7 +93,7 @@ void sSwapchain::createSwapchain(){
     vkGetSwapchainImagesKHR(_device.getDevice(),_swapchain,&imageCount,nullptr);
     _swapchainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(_device.getDevice(),_swapchain,&imageCount,_swapchainImages.data());  //write them to member vector
-    std::cout<< "Swapchain Images: " << _swapchainImages.size() << std::endl;
+    sDebug::Print( "Swapchain Images: "  + std::to_string(_swapchainImages.size()));
     
 }
 
@@ -149,9 +149,9 @@ void sSwapchain::createImageViews(){
       
       //create single image view for indexed image
         if(vkCreateImageView(_device.getDevice(),&createInfo,nullptr,&swapChainImageViews[i]) != VK_SUCCESS){
-            std::cout<<"Failed to create image view\n";
+            sDebug::Print("Failed to create image view");
         }else{
-            std::cout<<"Successfully created image view\n";
+            sDebug::Print("Successfully created image view");
         } //saf
     }
 

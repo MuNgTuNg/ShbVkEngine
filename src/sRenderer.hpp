@@ -15,6 +15,8 @@ class sRenderer{
    ~sRenderer();
    void createSwapchain();
    void createGraphicsPipleine();
+   void createRenderPass();
+   VkPipelineVertexInputStateCreateInfo setVertexInput();
 
  private:
    sWindow& _window;

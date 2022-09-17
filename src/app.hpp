@@ -39,8 +39,7 @@ class App
    sDevice _device{_window};
    sRenderer _renderer{_window, _device};
 
-   
-    
+  
 
 };
 
