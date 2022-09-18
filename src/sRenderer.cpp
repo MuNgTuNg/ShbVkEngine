@@ -7,6 +7,7 @@ namespace shb{
 void sRenderer::createSwapchain(){
     _swapchain.createSwapchain();
     _swapchain.createImageViews();
+    createPipelineLayout();
     createGraphicsPipleine();
 
 }
@@ -22,10 +23,13 @@ void sRenderer::createRenderPass(){ //TODO
     colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
     VkAttachmentReference attachmentReference;
+    attachmentReference.attachment = 0;
+    attachmentReference.layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     uint32_t subPassCount = 1;
     std::vector<VkSubpassDescription> subPasses(subPassCount);
     subPasses[0].colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
+   // subPasses[0].pColorAttachments = &attachmentReference;
 
 
      VkRenderPassCreateInfo renderPassCreateInfo{};
@@ -35,6 +39,7 @@ void sRenderer::createRenderPass(){ //TODO
 
      renderPassCreateInfo.subpassCount = static_cast<uint32_t>(subPasses.size());
      renderPassCreateInfo.pSubpasses = subPasses.data();
+     
 
 //  if(vkCreateRenderPass(_device.getDevice(), &renderPassCreateInfo,nullptr, &_renderPass) != VK_SUCCESS){
 //     std::cout<<"Failed to create render pass\n";
@@ -43,20 +48,79 @@ void sRenderer::createRenderPass(){ //TODO
 //  }
 }
 
-VkPipelineVertexInputStateCreateInfo sRenderer::setVertexInput() { //TODO
+VkPipelineVertexInputStateCreateInfo sRenderer::setVertexInput() { 
 
-    VkVertexInputAttributeDescription attributeDescription;
-    attributeDescription.location = 0;
-    attributeDescription.format = _swapchain.getFormat();
-    attributeDescription.offset = 0;
-    attributeDescription.binding = 0;
+    VkPhysicalDeviceProperties deviceProperties{};
+    vkGetPhysicalDeviceProperties(_device.getPhysicalDevice(),&deviceProperties);
+
+
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+
+    VkVertexInputAttributeDescription attributeDescription1;
+    attributeDescription1.format = _swapchain.getFormat();
+
+    uint32_t vertAttrOffset = 0;
+    uint32_t vertAttrBinding = 0;
+    uint32_t vertAttrLocation = 0;
+
+    if(vertAttrOffset <= deviceProperties.limits.maxVertexInputAttributeOffset 
+       && vertAttrBinding <= deviceProperties.limits.maxVertexInputBindings   
+       && vertAttrLocation <= deviceProperties.limits.maxVertexInputAttributes ){
+
+        attributeDescription1.offset = vertAttrOffset;
+        attributeDescription1.binding = vertAttrBinding;
+        attributeDescription1.location = vertAttrLocation;
+
+    }else{
+        sDebug::Print("Attribute descriptions unsuitable");
+    }
+    attributeDescriptions.push_back(attributeDescription1);
+    
+    
+  
+
+    std::vector<VkVertexInputBindingDescription> inputBindingDescriptions{};
+
+    VkVertexInputBindingDescription inputBindingDescription1{};
+
+    uint32_t binding = 0;
+    uint32_t stride = sizeof(sVertex);
+    
+    if(binding <= deviceProperties.limits.maxVertexInputBindings 
+       && stride <= deviceProperties.limits.maxVertexInputBindingStride){
+        inputBindingDescription1.binding = binding;
+        inputBindingDescription1.stride = stride;
+
+    }
+
+    inputBindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    inputBindingDescriptions.push_back(inputBindingDescription1);
    
+
     VkPipelineVertexInputStateCreateInfo inputStateCreateInfo;
-    inputStateCreateInfo.pVertexAttributeDescriptions = &attributeDescription;
+    inputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    inputStateCreateInfo.pNext = NULL;
+    inputStateCreateInfo.flags = 0;
+    inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
+    inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
 
 
 
     return inputStateCreateInfo;
+}
+
+void sRenderer::createPipelineLayout(){
+    VkPipelineLayoutCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+    if(vkCreatePipelineLayout(_device.getDevice(),&createInfo,nullptr,&_pipelineLayout) != VK_SUCCESS){
+        sDebug::Print("Failed to create Pipeline Layout");
+    }else{
+        sDebug::Print("Created pipeline layout");
+    }
 }
 
 void sRenderer::createGraphicsPipleine(){
@@ -91,11 +155,10 @@ void sRenderer::createGraphicsPipleine(){
 
  createRenderPass();
  VkPipelineVertexInputStateCreateInfo vertexInputState = setVertexInput();
- 
 
  std::vector<VkGraphicsPipelineCreateInfo> createInfos{}; //todo fill in graphics pipeline create info
  for(int i = 0; i < createInfos.size(); i++){
-    // createInfos[i].layout =
+    createInfos[i].layout = _pipelineLayout;
     // createInfos[i].pColorBlendState =
     // createInfos[i].pDepthStencilState =
     createInfos[i].pDynamicState = NULL;
@@ -105,7 +168,7 @@ void sRenderer::createGraphicsPipleine(){
     // createInfos[i].pStages =
     // createInfos[i].pTessellationState =
     createInfos[i].pVertexInputState = &vertexInputState;
-    // createInfos[i].renderPass =
+    //createInfos[i].renderPass = _renderPass; //not done yet
     // createInfos[i].stageCount =
     // createInfos[i].sType =
      //createInfos[i].subpass = subpasses[0];
@@ -127,6 +190,7 @@ sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _devic
 }
 
 sRenderer::~sRenderer(){
+    vkDestroyPipelineLayout(_device.getDevice(),_pipelineLayout,nullptr);
 
     vkDestroySwapchainKHR(_device.getDevice(), _swapchain.getSwapchain(),nullptr);
 }

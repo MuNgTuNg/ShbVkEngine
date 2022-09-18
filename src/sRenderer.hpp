@@ -3,6 +3,7 @@
 #include "sSwapchain.hpp"
 #include "sWindow.hpp"
 #include "sDevice.hpp"
+#include <glm/glm.hpp>
 
 namespace shb{
 
@@ -16,7 +17,10 @@ class sRenderer{
    void createSwapchain();
    void createGraphicsPipleine();
    void createRenderPass();
+   void createPipelineLayout();
+
    VkPipelineVertexInputStateCreateInfo setVertexInput();
+  
 
  private:
    sWindow& _window;
@@ -24,8 +28,14 @@ class sRenderer{
    sSwapchain _swapchain{_device};
    VkPipeline _pipeline;
    VkRenderPass _renderPass;
+   VkPipelineLayout _pipelineLayout;
    
 
+};
+
+class sVertex{
+  glm::mat4 pos;
+  glm::mat4 color;
 };
 
 }//namespace shb
