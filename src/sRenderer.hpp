@@ -19,7 +19,9 @@ class sRenderer{
    void createRenderPass();
    void createPipelineLayout();
 
-   VkPipelineVertexInputStateCreateInfo setVertexInput();
+   void setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
+                       std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
+                       VkPipelineVertexInputStateCreateInfo& inputStateCreateInfo  );
   
 
  private:
@@ -29,7 +31,7 @@ class sRenderer{
    VkPipeline _pipeline;
    VkRenderPass _renderPass;
    VkPipelineLayout _pipelineLayout;
-   
+   std::vector<VkSubpassDescription> _subPasses{};
 
 };
 
