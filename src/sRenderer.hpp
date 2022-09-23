@@ -36,8 +36,8 @@ class sRenderer{
 };
 
 class sVertex{
-  glm::mat4 pos;
-  glm::mat4 color;
+  float posX, posY, posZ;
+  uint32_t r,g,b;
 };
 
 }//namespace shb

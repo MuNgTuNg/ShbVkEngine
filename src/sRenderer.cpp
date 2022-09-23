@@ -70,51 +70,78 @@ void sRenderer::createRenderPass(){
 void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
                                std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
                                VkPipelineVertexInputStateCreateInfo& inputStateCreateInfo            ) {  //TODO:: annotate
-
+ 
+ 
+  //get physical device properties to check for input bindings and limits settings
     VkPhysicalDeviceProperties deviceProperties{};
     vkGetPhysicalDeviceProperties(_device.getPhysicalDevice(),&deviceProperties);
 
-    VkVertexInputAttributeDescription attributeDescription1{};
-    attributeDescription1.format = VK_FORMAT_R32G32_SFLOAT; //confusingly this uses the same enum as the colorspace
-    attributeDescription1.binding = 0;
-    attributeDescription1.location = 0;
-    //attributeDescription1.offset = offsetof(sVertex, pos);
 
-    uint32_t vertAttrOffset = 0;
-    uint32_t vertAttrBinding = 0;
-    uint32_t vertAttrLocation = 0;
-
-    if(vertAttrOffset <= deviceProperties.limits.maxVertexInputAttributeOffset 
-       && vertAttrBinding <= deviceProperties.limits.maxVertexInputBindings   
-       && vertAttrLocation <= deviceProperties.limits.maxVertexInputAttributes ){
-
-        attributeDescription1.offset = vertAttrOffset;
-        attributeDescription1.binding = vertAttrBinding;
-        attributeDescription1.location = vertAttrLocation;
-
-    }else{
-        sDebug::Print("Attribute descriptions unsuitable");
-    }
-    attributeDescriptions.push_back(attributeDescription1);
-  
-    
+  //binding description is like an overview of the data you're feeding to the shader
+  //binding is the kind of group of information you're describing and stride
+  //is the size of each input, each input is further segmented and described
+  //in the attribute descriptions, e.g the size of each individual component
     VkVertexInputBindingDescription inputBindingDescription1{};
-    
-    uint32_t binding = 0;
-    uint32_t stride = sizeof(sVertex);
+    inputBindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    uint32_t binding = 0;              //index 0 is one sort of group of objects(?)
+    uint32_t stride = sizeof(sVertex); //stride is the total size of each individual vertex being fed to the shader program
     
     if(binding <= deviceProperties.limits.maxVertexInputBindings 
        && stride <= deviceProperties.limits.maxVertexInputBindingStride){
-        inputBindingDescription1.binding = binding;
+        inputBindingDescription1.binding = binding; 
         inputBindingDescription1.stride = stride;
 
     }
 
-    inputBindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
     inputBindingDescriptions.push_back(inputBindingDescription1);
    
 
+  //attribute descriptions describe the component parts of a vertex, VK_FORMAT_R32_G32_SFLOAT describes two floats, used as 2d coordinates x and y
+    VkVertexInputAttributeDescription xyAttribute{};
+    xyAttribute.format = VK_FORMAT_R32G32B32_SFLOAT; //confusingly this uses the same enum as the colorspace
+    
+  //basic checking if the offset is within limits
+    uint32_t xyAttrOffset = 0;
+    uint32_t xyAttrLocation = 0;
+  
+    if(xyAttrOffset <= deviceProperties.limits.maxVertexInputAttributeOffset 
+       && inputBindingDescription1.binding <= deviceProperties.limits.maxVertexInputBindings   
+       && xyAttrLocation <= deviceProperties.limits.maxVertexInputAttributes ){
+
+        xyAttribute.offset = xyAttrOffset;         //where the data for this component starts within the struct e.g after 2 floats (2*sizeof(float))
+        xyAttribute.binding = inputBindingDescription1.binding;       //binding is what other attributes it is bound to in a kind of group
+        xyAttribute.location = xyAttrLocation;    //location corresponds with the GLSL (location )  
+
+    }else{
+        sDebug::Print("Attribute descriptions unsuitable");
+    }
+    attributeDescriptions.push_back(xyAttribute);
+  
+  //color component of my vertex = 3 integers
+    VkVertexInputAttributeDescription colorAttribute{};
+    colorAttribute.format = VK_FORMAT_R32G32B32_UINT;
+
+    //basic checking if the offset is within limits
+    uint32_t colorAttrOffset = 3*sizeof(float); //after x,y,z position
+    uint32_t colorAttrLocation = 1;             //location 1
+    if(colorAttrOffset <= deviceProperties.limits.maxVertexInputAttributeOffset 
+       && inputBindingDescription1.binding <= deviceProperties.limits.maxVertexInputBindings   
+       && colorAttrLocation <= deviceProperties.limits.maxVertexInputAttributes ){
+
+        colorAttribute.offset = colorAttrOffset;                          //where the data for this component starts within the struct e.g after 2 floats (2*sizeof(float))
+        colorAttribute.binding = inputBindingDescription1.binding;       //binding is what other attributes it is bound to in a kind of group
+        colorAttribute.location = colorAttrLocation;                     //location corresponds with the GLSL (location )  
+
+    }else{
+        sDebug::Print("Attribute descriptions unsuitable");
+    }
+    attributeDescriptions.push_back(colorAttribute);
+  
+
+    
+   
+  //used to create the graphics pipeline
     inputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     inputStateCreateInfo.pNext = NULL;
     inputStateCreateInfo.flags = 0;
@@ -170,6 +197,21 @@ void sRenderer::createGraphicsPipleine(){
 // • Fragment output state is defined by:
 //   »
 
+//signal that the states of the viewport and scissor will change over time
+std::vector<VkDynamicState> dynamicStates = {
+    VK_DYNAMIC_STATE_VIEWPORT,
+    VK_DYNAMIC_STATE_SCISSOR
+};
+
+VkPipelineDynamicStateCreateInfo dynamicState{};
+dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+dynamicState.pDynamicStates = dynamicStates.data();
+
+//set rasterizer state
+VkPipelineRasterizationStateCreateInfo rasterInfo{}; //todo
+rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+
 
 //do the necessary things to create a renderpass
  createRenderPass();
@@ -180,12 +222,12 @@ void sRenderer::createGraphicsPipleine(){
  std::vector<VkVertexInputBindingDescription> inputBindingDescriptions{};
  VkPipelineVertexInputStateCreateInfo inputStateCreateInfo {};
 
-//make all necessary settings to structs in order to decide how vertices are inputted to the (shader programme?)
+//make all necessary settings to structs in order to decide how vertices are inputted to the shader programme
  setVertexInput(attributeDescriptions,inputBindingDescriptions,inputStateCreateInfo); //TODO:: abstract this into a static function in a vertex class, it belongs to vertex
 
 
 //fill in information about pipelines wanting to be created
- std::vector<VkGraphicsPipelineCreateInfo> pipelineCreateInfos{}; //todo fill in graphics pipeline create info
+ std::vector<VkGraphicsPipelineCreateInfo> pipelineCreateInfos{}; 
 
 //VkPipelineCache pipelineCache; //set to VK_NULL_HANDLE, i dont want to use it yet
 
@@ -197,16 +239,16 @@ void sRenderer::createGraphicsPipleine(){
  pipeline1.layout = _pipelineLayout;
  //pipeline1.pColorBlendState =
  //pipeline1.pDepthStencilState =
- pipeline1.pDynamicState = NULL;
+ //pipeline1.pViewportState = 
+ pipeline1.pDynamicState = &dynamicState;
  //pipeline1.pInputAssemblyState =
  //pipeline1.pMultisampleState =
- //pipeline1.pRasterizationState =
+ //pipeline1.pRasterizationState = &rasterInfo;
  //pipeline1.pStages =
  //pipeline1.pTessellationState =
  pipeline1.pVertexInputState = &inputStateCreateInfo;
  pipeline1.renderPass = _renderPass; 
  //pipeline1.stageCount =
- //pipeline1.sType =
  pipeline1.subpass = 0;
  pipelineCreateInfos.push_back(pipeline1);
 
