@@ -34,7 +34,7 @@ class sSwapchain{
     
     sSwapchain* _oldSwapchain = nullptr;
     std::vector<VkImage> _swapchainImages;
-
+    
     VkPresentModeKHR _presentMode = VK_PRESENT_MODE_FIFO_KHR; //todo:: query available present modes
     VkFormat _format;
     std::vector<VkImageView> swapChainImageViews;

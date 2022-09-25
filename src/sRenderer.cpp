@@ -197,20 +197,10 @@ void sRenderer::createGraphicsPipleine(){
 // • Fragment output state is defined by:
 //   »
 
-//signal that the states of the viewport and scissor will change over time
-std::vector<VkDynamicState> dynamicStates = {
-    VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR
-};
 
-VkPipelineDynamicStateCreateInfo dynamicState{};
-dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-dynamicState.pDynamicStates = dynamicStates.data();
-
-//set rasterizer state
-VkPipelineRasterizationStateCreateInfo rasterInfo{}; //todo
-rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+ //set rasterizer state
+ VkPipelineRasterizationStateCreateInfo rasterInfo{}; //todo
+ rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 
 
 //do the necessary things to create a renderpass
@@ -226,6 +216,72 @@ rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
  setVertexInput(attributeDescriptions,inputBindingDescriptions,inputStateCreateInfo); //TODO:: abstract this into a static function in a vertex class, it belongs to vertex
 
 
+// "draw triangles please"
+ VkPipelineInputAssemblyStateCreateInfo assemblyStateCreateInfo{};
+ assemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+ assemblyStateCreateInfo.pNext = NULL;
+ assemblyStateCreateInfo.flags = 0;
+ assemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+
+ //signal that the states of the viewport and scissor will change over time
+ std::vector<VkDynamicState> dynamicStates = {
+     VK_DYNAMIC_STATE_VIEWPORT,
+     VK_DYNAMIC_STATE_SCISSOR
+ };
+ 
+ VkPipelineDynamicStateCreateInfo dynamicState{};
+ dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+ dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+ dynamicState.pDynamicStates = dynamicStates.data();
+
+//set scissor to window height and width
+ VkRect2D scissor{};
+ scissor.extent.height = _window._height;
+ scissor.extent.width = _window._width;
+
+//set viewport to match window height and width also
+ VkViewport viewport{};
+ viewport.height = _window._height;
+ viewport.width = _window._width;
+ viewport.x = 0.0f;                   //x = far left of screen
+ viewport.y = 0.0f;                   //y = top of screen
+ viewport.minDepth = 0.0f;            //minimum depth check
+ viewport.maxDepth = 1.0f;            //maximum depth check
+
+//create info relating to viewport and scissor
+ VkPipelineViewportStateCreateInfo viewportCreateInfo{};
+ viewportCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+ viewportCreateInfo.pScissors = &scissor;
+ viewportCreateInfo.pViewports = &viewport;
+ viewportCreateInfo.scissorCount = 1;
+ viewportCreateInfo.viewportCount = 1;
+
+
+ std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
+
+ VkShaderModule vertexShaderCode{}; //= createShaderModule("/shaders/vertShader.vert.spv")
+ VkShaderModule fragmentShaderCode{}; //= createShaderModule("/shaders/fragShader.frag.spv")
+
+ VkPipelineShaderStageCreateInfo vertexShader{};
+ vertexShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+ vertexShader.pNext = NULL;
+ vertexShader.stage = VK_SHADER_STAGE_VERTEX_BIT;
+ vertexShader.pName = "main";
+ vertexShader.module = vertexShaderCode;
+
+ shaderStages.push_back(vertexShader);
+
+ VkPipelineShaderStageCreateInfo fragmentShader{};
+ fragmentShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+ fragmentShader.pNext = NULL;
+ fragmentShader.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+ fragmentShader.pName = "main";
+ fragmentShader.module = fragmentShaderCode;
+
+ shaderStages.push_back(fragmentShader);
+
+
 //fill in information about pipelines wanting to be created
  std::vector<VkGraphicsPipelineCreateInfo> pipelineCreateInfos{}; 
 
@@ -235,21 +291,21 @@ rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 //•••create first pipeline•••//
 //•••••••••••••••••••••••••••//
  VkGraphicsPipelineCreateInfo pipeline1{};  //TODO:: finish filling in struct
- pipeline1.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
- pipeline1.layout = _pipelineLayout;
+ pipeline1.sType =                     VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+ pipeline1.layout =                    _pipelineLayout;
  //pipeline1.pColorBlendState =
  //pipeline1.pDepthStencilState =
- //pipeline1.pViewportState = 
- pipeline1.pDynamicState = &dynamicState;
- //pipeline1.pInputAssemblyState =
+ pipeline1.pViewportState =            &viewportCreateInfo;
+ pipeline1.pDynamicState =             &dynamicState;
+ pipeline1.pInputAssemblyState =       &assemblyStateCreateInfo;
  //pipeline1.pMultisampleState =
- //pipeline1.pRasterizationState = &rasterInfo;
- //pipeline1.pStages =
+ //pipeline1.pRasterizationState =     &rasterInfo;
+ pipeline1.pStages =                   shaderStages.data();
+ pipeline1.stageCount =                static_cast<uint32_t>(shaderStages.size());
  //pipeline1.pTessellationState =
- pipeline1.pVertexInputState = &inputStateCreateInfo;
- pipeline1.renderPass = _renderPass; 
- //pipeline1.stageCount =
- pipeline1.subpass = 0;
+ pipeline1.pVertexInputState =         &inputStateCreateInfo;
+ pipeline1.renderPass =                _renderPass; 
+ pipeline1.subpass =                   0;
  pipelineCreateInfos.push_back(pipeline1);
 
 

@@ -54,7 +54,7 @@ void sSwapchain::createSwapchain(){
     createInfo.minImageCount = surfaceCapabilities.minImageCount +1;                                //minimum count of swapchain is the minimum the surface can support plus one
     
     createInfo.imageExtent = surfaceCapabilities.currentExtent;                                     //potential problem if i remember correctly, image extent is set to surfaces image extent
-    createInfo.imageArrayLayers = 1;                                                                //image array has one layer (images are represented as arrays apparantlu)
+    createInfo.imageArrayLayers = 1;                                                                //image array has one layer (images are represented as arrays)
     createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;                                       //more than one queue
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;                                    //is being used to write color to the screen 
     createInfo.queueFamilyIndexCount = QFI.queueIndicesArray.size();                                //total indices being used                                   
@@ -71,6 +71,7 @@ void sSwapchain::createSwapchain(){
     //     }
         
     // }
+    
   //choose using the header file just so i can change it from one place  (more crude but makes it easier to feel around a bit)
     createInfo.presentMode = _presentMode;
 
