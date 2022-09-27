@@ -69,7 +69,7 @@ void sRenderer::createRenderPass(){
 
 void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
                                std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
-                               VkPipelineVertexInputStateCreateInfo& inputStateCreateInfo            ) {  //TODO:: annotate
+                               VkPipelineVertexInputStateCreateInfo& inputStateCreateInfo            ) { 
  
  
   //get physical device properties to check for input bindings and limits settings
@@ -120,7 +120,7 @@ void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
   
   //color component of my vertex = 3 integers
     VkVertexInputAttributeDescription colorAttribute{};
-    colorAttribute.format = VK_FORMAT_R32G32B32_UINT;
+    colorAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
 
     //basic checking if the offset is within limits
     uint32_t colorAttrOffset = 3*sizeof(float); //after x,y,z position
@@ -138,6 +138,8 @@ void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
     }
     attributeDescriptions.push_back(colorAttribute);
   
+
+   
 
     
    
@@ -165,6 +167,41 @@ void sRenderer::createPipelineLayout(){ //not entirely sure what this is used fo
     }else{
         sDebug::Print("Created pipeline layout");
     }
+}
+
+
+VkShaderModule sRenderer::createShaderModule(const std::string& filePath){
+  std::ifstream file;
+  file.open(filePath.c_str(), std::ios::ate |  std::ios::binary | std::ios::in );
+  if(!file.is_open()){
+    sDebug::Print("Failed to open file");
+    return VK_NULL_HANDLE;
+  }else{
+    sDebug::Print("Successfully opened file");
+  }
+
+  int size = file.tellg();
+  
+  file.seekg(0, std::ios::beg);
+  std::vector<char> code(size);
+  file.read(code.data(),code.size());
+
+  file.close();
+
+  VkShaderModuleCreateInfo moduleCreateInfo{};
+  moduleCreateInfo.codeSize = size;
+  moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+  moduleCreateInfo.pNext =  NULL;
+
+  VkShaderModule module;
+  
+  if(vkCreateShaderModule(_device.getDevice(),&moduleCreateInfo,nullptr,&module) != VK_SUCCESS){
+    sDebug::Print("Failed to create shader module");
+  }else{
+    sDebug::Print("Sucessfully created shader module");
+  }
+  return module;
 }
 
 
@@ -258,28 +295,29 @@ void sRenderer::createGraphicsPipleine(){
  viewportCreateInfo.viewportCount = 1;
 
 
- std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
+ std::vector<VkPipelineShaderStageCreateInfo> shaderStages{}; //todo:: annotate
+ 
+  
+ _vertexShader = createShaderModule(_vertexShaderLocation);
+ _fragmentShader = createShaderModule(_fragmentShaderLocation);
 
- VkShaderModule vertexShaderCode{}; //= createShaderModule("/shaders/vertShader.vert.spv")
- VkShaderModule fragmentShaderCode{}; //= createShaderModule("/shaders/fragShader.frag.spv")
+ VkPipelineShaderStageCreateInfo vertexShaderCreateInfo{};
+ vertexShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+ vertexShaderCreateInfo.pNext = NULL;
+ vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+ vertexShaderCreateInfo.pName = "main";
+ vertexShaderCreateInfo.module = _vertexShader;
 
- VkPipelineShaderStageCreateInfo vertexShader{};
- vertexShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
- vertexShader.pNext = NULL;
- vertexShader.stage = VK_SHADER_STAGE_VERTEX_BIT;
- vertexShader.pName = "main";
- vertexShader.module = vertexShaderCode;
+ shaderStages.push_back(vertexShaderCreateInfo);
 
- shaderStages.push_back(vertexShader);
+ VkPipelineShaderStageCreateInfo fragmentShaderCreateInfo{};
+ fragmentShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+ fragmentShaderCreateInfo.pNext = NULL;
+ fragmentShaderCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+ fragmentShaderCreateInfo.pName = "main";
+ fragmentShaderCreateInfo.module = _fragmentShader;
 
- VkPipelineShaderStageCreateInfo fragmentShader{};
- fragmentShader.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
- fragmentShader.pNext = NULL;
- fragmentShader.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
- fragmentShader.pName = "main";
- fragmentShader.module = fragmentShaderCode;
-
- shaderStages.push_back(fragmentShader);
+ shaderStages.push_back(fragmentShaderCreateInfo);
 
 
 //fill in information about pipelines wanting to be created
@@ -328,6 +366,8 @@ sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _devic
 
 
 sRenderer::~sRenderer(){
+    vkDestroyShaderModule(_device.getDevice(),_fragmentShader,nullptr);
+    vkDestroyShaderModule(_device.getDevice(),_vertexShader,nullptr);
     vkDestroyPipeline(_device.getDevice(), _pipeline,nullptr);
     vkDestroyRenderPass(_device.getDevice(),_renderPass,nullptr);
     vkDestroyPipelineLayout(_device.getDevice(),_pipelineLayout,nullptr);
