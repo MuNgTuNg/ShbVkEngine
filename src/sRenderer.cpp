@@ -12,9 +12,8 @@ void sRenderer::createSwapchain(){
 
 
 void sRenderer::createRenderPass(){ 
-   //add colorAttachments vector
-    std::vector<VkAttachmentDescription> colorAttachmentsDescriptions{};
-    
+
+   
    //keep an index of each color attachment 
    int colorAttachmentIndex = 0;
     VkAttachmentDescription colorAttachmentDescription{};
@@ -24,36 +23,50 @@ void sRenderer::createRenderPass(){
     colorAttachmentDescription.format = _swapchain.getFormat();               //format of the image being described
     colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;          //when i load this attachment i want it to clear its contents
     colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;    //i dont care about storing it, it doesnt matter right now
-
    //add color attachment to the vector of color attachments 
-    colorAttachmentsDescriptions.push_back(colorAttachmentDescription);
+    _attachmentDescriptions.push_back(colorAttachmentDescription);
 
-   //handles for color attachments 
-    std::vector<VkAttachmentReference> colorAttachments{};
-  
+
+    int depthAttachmentIndex = 1;
+    VkAttachmentDescription depthAttachmentDescription{};
+    depthAttachmentDescription.loadOp =  VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT;
+    depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    //_attachmentDescriptions.push_back(depthAttachmentDescription); //todo deal with depth
+
+
   //first color attachment
-    VkAttachmentReference colorAttachment1;
+    VkAttachmentReference colorAttachment1{};
     colorAttachment1.attachment = colorAttachmentIndex;                   //index of the particular attachment
     colorAttachment1.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;   //how i want the image laid out
-    colorAttachments.push_back(colorAttachment1);
+    _colorAttachments.push_back(colorAttachment1);
+
+  //first depth attachment
+    VkAttachmentReference depthAttachment1{};
+    depthAttachment1.attachment = depthAttachmentIndex;
+    depthAttachment1.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    //_depthAttachments.push_back(depthAttachment1); //todo deal with depth
   
 
-  //assuming this will be needed later
-    std::vector<VkAttachmentDescription> depthAttachmentDescription{};
 
   //create subpass 1 (0)
     VkSubpassDescription subPass1{};
-    subPass1.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;    //this is going to bound to a graphics pipeline
-    subPass1.colorAttachmentCount = colorAttachments.size();         //all the color attachments
-    subPass1.pColorAttachments = colorAttachments.data();            //pointer into the color attachments vector
+    subPass1.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;    //this is going to bind to a graphics pipeline
+    subPass1.colorAttachmentCount = _colorAttachments.size();         //all the color attachments
+    subPass1.pColorAttachments = _colorAttachments.data();            //pointer into the color attachments vector
+    //subPass1.pDepthStencilAttachment = _depthAttachments.data();    //todo deal with depth
     _subPasses.push_back(subPass1);
+    
 
   //render pass information
      VkRenderPassCreateInfo renderPassCreateInfo{};
      renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
      renderPassCreateInfo.pNext = nullptr;  
-     renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(colorAttachmentsDescriptions.size());
-     renderPassCreateInfo.pAttachments = colorAttachmentsDescriptions.data();    
+     renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(_attachmentDescriptions.size());
+     renderPassCreateInfo.pAttachments = _attachmentDescriptions.data();    
      renderPassCreateInfo.subpassCount = static_cast<uint32_t>(_subPasses.size());
      renderPassCreateInfo.pSubpasses = _subPasses.data();
      
@@ -171,31 +184,41 @@ void sRenderer::createPipelineLayout(){ //not entirely sure what this is used fo
 
 
 VkShaderModule sRenderer::createShaderModule(const std::string& filePath){
+ //open file at the end of the file (ate) in binary form, and open for input
   std::ifstream file;
   file.open(filePath.c_str(), std::ios::ate |  std::ios::binary | std::ios::in );
+
+ //check file is open
   if(!file.is_open()){
     sDebug::Print("Failed to open file");
     return VK_NULL_HANDLE;
   }else{
     sDebug::Print("Successfully opened file");
   }
-
+ 
+ //save size of file, pointer is at the end of file 
   int size = file.tellg();
   
+ //look for the beginning of the file
   file.seekg(0, std::ios::beg);
-  std::vector<char> code(size);
-  file.read(code.data(),code.size());
 
+ //create vector to hold all of the code
+  std::vector<char> code(size);
+ //read all of the data into the vector (like malloc())
+  file.read(code.data(),code.size()); 
+
+ //close the file 
   file.close();
 
+ //set details about shader module
   VkShaderModuleCreateInfo moduleCreateInfo{};
-  moduleCreateInfo.codeSize = size;
-  moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+  moduleCreateInfo.codeSize = size;                                        
+  moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;    
+  moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data()); 
   moduleCreateInfo.pNext =  NULL;
 
   VkShaderModule module;
-  
+ 
   if(vkCreateShaderModule(_device.getDevice(),&moduleCreateInfo,nullptr,&module) != VK_SUCCESS){
     sDebug::Print("Failed to create shader module");
   }else{
@@ -235,9 +258,24 @@ void sRenderer::createGraphicsPipleine(){
 //   »
 
 
- //set rasterizer state
- VkPipelineRasterizationStateCreateInfo rasterInfo{}; //todo
+//set rasterizer state
+ VkPipelineRasterizationStateCreateInfo rasterInfo{}; //todo annotate
  rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+ rasterInfo.pNext = NULL;
+ 
+ rasterInfo.depthClampEnable = VK_FALSE; //todo research depth 
+ rasterInfo.depthBiasEnable = VK_TRUE;
+ rasterInfo.depthBiasConstantFactor = 1.0f;
+ rasterInfo.depthBiasClamp = 1.0f;
+
+ rasterInfo.rasterizerDiscardEnable = VK_TRUE;
+
+ rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
+
+ rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+ rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+ rasterInfo.lineWidth = 1.0f;
+
 
 
 //do the necessary things to create a renderpass
@@ -264,7 +302,8 @@ void sRenderer::createGraphicsPipleine(){
  //signal that the states of the viewport and scissor will change over time
  std::vector<VkDynamicState> dynamicStates = {
      VK_DYNAMIC_STATE_VIEWPORT,
-     VK_DYNAMIC_STATE_SCISSOR
+     VK_DYNAMIC_STATE_SCISSOR,
+     VK_DYNAMIC_STATE_DEPTH_BIAS
  };
  
  VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -298,7 +337,7 @@ void sRenderer::createGraphicsPipleine(){
  std::vector<VkPipelineShaderStageCreateInfo> shaderStages{}; //todo:: annotate
  
   
- _vertexShader = createShaderModule(_vertexShaderLocation);
+ _vertexShader = createShaderModule(_vertexShaderLocation);  
  _fragmentShader = createShaderModule(_fragmentShaderLocation);
 
  VkPipelineShaderStageCreateInfo vertexShaderCreateInfo{};
@@ -337,7 +376,7 @@ void sRenderer::createGraphicsPipleine(){
  pipeline1.pDynamicState =             &dynamicState;
  pipeline1.pInputAssemblyState =       &assemblyStateCreateInfo;
  //pipeline1.pMultisampleState =
- //pipeline1.pRasterizationState =     &rasterInfo;
+ pipeline1.pRasterizationState =       &rasterInfo;
  pipeline1.pStages =                   shaderStages.data();
  pipeline1.stageCount =                static_cast<uint32_t>(shaderStages.size());
  //pipeline1.pTessellationState =
@@ -355,17 +394,43 @@ void sRenderer::createGraphicsPipleine(){
 }
 
 
+void sRenderer::createFramebuffers(){ //todo annotate
+  _swapchain.frameBuffers.resize(_attachmentDescriptions.size());
+  for(int i = 0; i <= _swapchain.frameBuffers.size(); i++){
+    VkFramebufferCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    createInfo.height = _window._height;
+    createInfo.width = _window._width;
+    createInfo.renderPass = _renderPass;
+    createInfo.attachmentCount = _attachmentDescriptions.size();
+    createInfo.pAttachments = _swapchain.swapChainImageViews.data();
+    createInfo.layers = 1;
+
+    if(vkCreateFramebuffer(_device.getDevice(),&createInfo,nullptr,&_swapchain.frameBuffers[i])!=VK_SUCCESS){
+      sDebug::Print("Failed to create framebuffer");
+    }else{
+      sDebug::Print("Successfully created framebuffer");
+    }
+
+  }
+  
+}
+
 
 sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device), _swapchain(device) {
     createSwapchain();
     createPipelineLayout();
     createGraphicsPipleine();
+    createFramebuffers();
 
 }
 
 
 
 sRenderer::~sRenderer(){
+    for(int i= 0; i<= _swapchain.frameBuffers.size(); i++){
+      vkDestroyFramebuffer(_device.getDevice(),_swapchain.frameBuffers[i],nullptr);
+    }
     vkDestroyShaderModule(_device.getDevice(),_fragmentShader,nullptr);
     vkDestroyShaderModule(_device.getDevice(),_vertexShader,nullptr);
     vkDestroyPipeline(_device.getDevice(), _pipeline,nullptr);

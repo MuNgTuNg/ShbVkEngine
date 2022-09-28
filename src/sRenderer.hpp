@@ -21,6 +21,7 @@ class sRenderer{
    void createGraphicsPipleine();
    void createRenderPass();
    void createPipelineLayout();
+   void createFramebuffers();
 
    void setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
                        std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
@@ -36,19 +37,26 @@ class sRenderer{
    VkRenderPass _renderPass;
    VkPipelineLayout _pipelineLayout;
    std::vector<VkSubpassDescription> _subPasses{};
+   
 
    VkShaderModule _vertexShader;
    VkShaderModule _fragmentShader;
    const std::string& _vertexShaderLocation{"../shaders/vertShader.vert.spv"}; 
    const std::string& _fragmentShaderLocation{"../shaders/fragShader.frag.spv"};
 
+   std::vector<VkAttachmentReference> _colorAttachments{};
+   std::vector<VkAttachmentReference> _depthAttachments{};
+   std::vector<VkAttachmentDescription> _attachmentDescriptions{};
+
+
+
  
 
 };
 
 class sVertex{
-  float posX, posY, posZ;
-  uint32_t r,g,b;
+  glm::vec3 _position;
+  glm::vec3 _color;
 };
 
 }//namespace shb
