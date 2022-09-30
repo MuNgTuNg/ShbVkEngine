@@ -26,7 +26,16 @@ class sSwapchain{
     void createImageViews();
     VkSwapchainKHR getSwapchain() { return _swapchain;}
     VkFormat getFormat() { return _format; }
-    std::vector<VkImageView>& getImageViews() { return swapChainImageViews;}
+    std::vector<VkImageView>& getImageViews() { return _swapchainImageViews;}
+
+    void createImage( VkImageType imageType, 
+                                  VkFormat format,
+                                  VkImageTiling tiling,
+                                  VkSampleCountFlagBits sampling, 
+                                  VkImageUsageFlags usage, 
+                                  int imageIndex,
+                                  VkDeviceMemory& memory  );
+
     
 
     VkSwapchainKHR _swapchain;
@@ -42,7 +51,10 @@ class sSwapchain{
     
     VkPresentModeKHR _presentMode = VK_PRESENT_MODE_FIFO_KHR; //todo:: query available present modes
     VkFormat _format;
-    std::vector<VkImageView> swapChainImageViews;
+    std::vector<VkImageView> _swapchainImageViews;
+    int _usedImages = 0;
+    VkDeviceMemory _colorMemory;
+    VkDeviceMemory _depthMemory;    
 
 };
 

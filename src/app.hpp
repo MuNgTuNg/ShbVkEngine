@@ -11,6 +11,15 @@
 //std
 #include <iostream>
 
+
+//file search keys:
+//     (???) source of confusion that needs to be addressed (possible future errors)
+//     TODO:: stuff that needs to be done 
+//     (research) stuff that needs to be researched
+
+
+//todo add debug messages when all things are destroyed
+
 namespace shb{
 
 

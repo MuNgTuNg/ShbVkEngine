@@ -34,10 +34,10 @@ void sRenderer::createRenderPass(){
     depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT;
     depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    //_attachmentDescriptions.push_back(depthAttachmentDescription); //todo deal with depth
+    depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    _attachmentDescriptions.push_back(depthAttachmentDescription);
 
-
+ 
   //first color attachment
     VkAttachmentReference colorAttachment1{};
     colorAttachment1.attachment = colorAttachmentIndex;                   //index of the particular attachment
@@ -47,17 +47,17 @@ void sRenderer::createRenderPass(){
   //first depth attachment
     VkAttachmentReference depthAttachment1{};
     depthAttachment1.attachment = depthAttachmentIndex;
-    depthAttachment1.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    //_depthAttachments.push_back(depthAttachment1); //todo deal with depth
+    depthAttachment1.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    _depthAttachments.push_back(depthAttachment1); 
   
-
+  
 
   //create subpass 1 (0)
     VkSubpassDescription subPass1{};
     subPass1.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;    //this is going to bind to a graphics pipeline
     subPass1.colorAttachmentCount = _colorAttachments.size();         //all the color attachments
     subPass1.pColorAttachments = _colorAttachments.data();            //pointer into the color attachments vector
-    //subPass1.pDepthStencilAttachment = _depthAttachments.data();    //todo deal with depth
+    subPass1.pDepthStencilAttachment = _depthAttachments.data();    
     _subPasses.push_back(subPass1);
     
 
@@ -259,22 +259,18 @@ void sRenderer::createGraphicsPipleine(){
 
 
 //set rasterizer state
- VkPipelineRasterizationStateCreateInfo rasterInfo{}; //todo annotate
+ VkPipelineRasterizationStateCreateInfo rasterInfo{}; 
  rasterInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
  rasterInfo.pNext = NULL;
- 
- rasterInfo.depthClampEnable = VK_FALSE; //todo research depth 
+ rasterInfo.depthClampEnable = VK_FALSE; //(research) research depth 
  rasterInfo.depthBiasEnable = VK_TRUE;
  rasterInfo.depthBiasConstantFactor = 1.0f;
  rasterInfo.depthBiasClamp = 1.0f;
-
- rasterInfo.rasterizerDiscardEnable = VK_TRUE;
-
- rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
-
- rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;
- rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
- rasterInfo.lineWidth = 1.0f;
+ rasterInfo.rasterizerDiscardEnable = VK_TRUE;      //rasterizer is able to discard primitives
+ rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;     //will fill primitives with color
+ rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;       //will cull primitives that are not facing the front
+ rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;    //this decides which face is the front face (clockwise means a triangle is drawn: top, bottom right, bottom left)
+ rasterInfo.lineWidth = 1.0f;                       //line width
 
 
 
@@ -334,21 +330,23 @@ void sRenderer::createGraphicsPipleine(){
  viewportCreateInfo.viewportCount = 1;
 
 
- std::vector<VkPipelineShaderStageCreateInfo> shaderStages{}; //todo:: annotate
+ std::vector<VkPipelineShaderStageCreateInfo> shaderStages{}; //todo:: further abstract to make vector a member and make shader addition trivial?
  
-  
- _vertexShader = createShaderModule(_vertexShaderLocation);  
+//read the actual data in binary form from the .spv files  
+ _vertexShader = createShaderModule(_vertexShaderLocation);    
  _fragmentShader = createShaderModule(_fragmentShaderLocation);
 
- VkPipelineShaderStageCreateInfo vertexShaderCreateInfo{};
+//fill in details about the shader wanting to be created 
+ VkPipelineShaderStageCreateInfo vertexShaderCreateInfo{};                       
  vertexShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
  vertexShaderCreateInfo.pNext = NULL;
- vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
- vertexShaderCreateInfo.pName = "main";
- vertexShaderCreateInfo.module = _vertexShader;
+ vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;       //this is a vertex shader
+ vertexShaderCreateInfo.pName = "main";                           //entry point of the shader code
+ vertexShaderCreateInfo.module = _vertexShader;                   //code for the vertex shader
 
- shaderStages.push_back(vertexShaderCreateInfo);
+ shaderStages.push_back(vertexShaderCreateInfo);                  //add it to the stages vector
 
+//same again for the fragment shader
  VkPipelineShaderStageCreateInfo fragmentShaderCreateInfo{};
  fragmentShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
  fragmentShaderCreateInfo.pNext = NULL;
@@ -394,27 +392,28 @@ void sRenderer::createGraphicsPipleine(){
 }
 
 
-void sRenderer::createFramebuffers(){ //todo annotate
+void sRenderer::createFramebuffers(){ // (???)
+//i want the same amount of framebuffers as i have attachments (which is also how many images im USING)
   _swapchain.frameBuffers.resize(_attachmentDescriptions.size());
+
   for(int i = 0; i <= _swapchain.frameBuffers.size(); i++){
     VkFramebufferCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    createInfo.height = _window._height;
-    createInfo.width = _window._width;
-    createInfo.renderPass = _renderPass;
-    createInfo.attachmentCount = _attachmentDescriptions.size();
-    createInfo.pAttachments = _swapchain.swapChainImageViews.data();
+    createInfo.height = _swapchain._surfaceCapabilities.currentExtent.height;
+    createInfo.width = _swapchain._surfaceCapabilities.currentExtent.width;
+    createInfo.renderPass = _renderPass;                         //defines what renderpasses the framebuffer will be compatable with
+    createInfo.attachmentCount = _attachmentDescriptions.size();      //total number of attachments
+    createInfo.pAttachments = _swapchain._swapchainImageViews.data(); //pointer into the image views to read attachments to framebuffers (???)
     createInfo.layers = 1;
-
+    
     if(vkCreateFramebuffer(_device.getDevice(),&createInfo,nullptr,&_swapchain.frameBuffers[i])!=VK_SUCCESS){
       sDebug::Print("Failed to create framebuffer");
     }else{
       sDebug::Print("Successfully created framebuffer");
     }
-
   }
-  
 }
+
 
 
 sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device), _swapchain(device) {
@@ -422,8 +421,10 @@ sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _devic
     createPipelineLayout();
     createGraphicsPipleine();
     createFramebuffers();
+    
 
 }
+
 
 
 

@@ -1,5 +1,5 @@
 #pragma once
-
+#include "sCommands.hpp"
 #include "sSwapchain.hpp"
 #include "sWindow.hpp"
 #include "sDevice.hpp"
@@ -33,6 +33,8 @@ class sRenderer{
    sWindow& _window;
    sDevice& _device;
    sSwapchain _swapchain{_device};
+   sCommands _commands;
+
    VkPipeline _pipeline;
    VkRenderPass _renderPass;
    VkPipelineLayout _pipelineLayout;
