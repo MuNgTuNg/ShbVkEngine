@@ -56,8 +56,8 @@ void sCommands::recordCommandBuffer(int index){
     
    std::vector<sVertex> vertices;
    for(int i =0; i<=vertices.size(); ++i){
-        vertices[i]._color = glm::vec3{130.f,231.f,131.f},
-        //glm::vec3{244.f,234.f,234.f};
+        vertices[i]._color = glm::vec3{130.f,231.f,131.f};
+        vertices[i]._position = glm::vec3{244.f,234.f,234.f};
     
    }
 
@@ -75,7 +75,7 @@ bufferCreateInfo.queueFamilyIndexCount = QFI.queueIndicesArray.size();
 bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-bufferCreateInfo.size= sizeof(vertices);
+bufferCreateInfo.size= static_cast<uint32_t>(sizeof(vertices));
 
 
 
