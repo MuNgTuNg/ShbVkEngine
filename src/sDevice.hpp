@@ -20,44 +20,45 @@ struct QueueFamilyIndices{
   bool gfxFamilyHasValue = false;      //boolean indicating that a value has been assigned to graphicsFamily index
   bool presentFamilyHasValue = false;  //boolean indicating that a value has been assigned to presentFamily index
 
+
   bool isComplete() {
     return gfxFamilyHasValue && presentFamilyHasValue;  //we have completed a search for queue family indeces
                                                         //as all indexes have been assigned to
   }
 
+
   int totalQueues =0 ;         //indicates the amount of queues added in in total
   std::vector<int> queueIndicesArray; 
 };
+
+
 class sWindow;
 
 class sDevice{
  public:
   sDevice(sWindow& window) : _window(window){ 
-    
     initVulkan();
-    }
-    
-  
+  }
   ~sDevice();
+
+  VkQueue getGraphicsQueue() const { return _graphicsQueue;  }
+  VkDevice getDevice() const { return _device; }
+  VkSurfaceKHR getSurface() const { return _surface; }
+  VkPhysicalDevice getPhysicalDevice() const { return _gpu ; }
+  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
   
+ private:
   void setupDebugMessenger();
   void createInstance();
   void initVulkan();
   void pickPhysicalDevice();
   void createLogicalDevice();
   bool checkValidationLayerSupport();
-  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
 
   bool isDeviceSuitable(VkPhysicalDevice& device);
 
-  VkDevice getDevice() const { return _device; }
-  VkSurfaceKHR getSurface() const { return _surface; }
-  VkPhysicalDevice getPhysicalDevice() const { return _gpu ; }
-
-  
-  
-  
- private:
   
   sWindow& _window;
   VkInstance _instance;
@@ -69,13 +70,13 @@ class sDevice{
 
   VkQueue _graphicsQueue;
   
-const std::vector<const char*> deviceExtensions = {
+  const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
+  };
 
-const std::vector<const char*> validationLayers = {
+  const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
-};
+  };
 
 
 

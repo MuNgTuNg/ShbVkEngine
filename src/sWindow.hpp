@@ -19,13 +19,18 @@ class sWindow{
     return _window;
    }
 
-   int _width;
-   int _height;
-   
+   const int width() { return _width; }
+   const int height() { return _height; }
+   void setWidth(int i) { _width = i; }
+   void setHeight(int i) { _height = i; }
+
  private:
    void initWindow(int width, int height, const std::string& title);
    void createSurface(VkInstance,VkSurfaceKHR*);
 
+   
+   int _width;
+   int _height;
    
    std::string _title;
    GLFWwindow* _window;

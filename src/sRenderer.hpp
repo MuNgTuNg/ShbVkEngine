@@ -1,8 +1,10 @@
 #pragma once
-#include "sCommands.hpp"
+
 #include "sSwapchain.hpp"
 #include "sWindow.hpp"
 #include "sDevice.hpp"
+#include "sCommands.hpp"
+
 
 #include <glm/glm.hpp>
 
@@ -17,6 +19,12 @@ class sRenderer{
  public:
    sRenderer(sWindow& window,sDevice& device );
    ~sRenderer();
+   void render();
+
+  
+  
+ private:
+   
    void createSwapchain();
    void createGraphicsPipleine();
    void createRenderPass();
@@ -27,17 +35,14 @@ class sRenderer{
                        std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
                        VkPipelineVertexInputStateCreateInfo& inputStateCreateInfo  );
   
-   VkShaderModule createShaderModule(const std::string& filePath);
-
- private:
    sWindow& _window;
    sDevice& _device;
-   sSwapchain _swapchain{_device};
-   sCommands _commands;
-
+   sSwapchain _swapchain{_device,_window};
    VkPipeline _pipeline;
-   VkRenderPass _renderPass;
+   sCommands _commands{_device,_swapchain,_pipeline};
+
    VkPipelineLayout _pipelineLayout;
+   VkRenderPass _renderPass;
    std::vector<VkSubpassDescription> _subPasses{};
    
 
@@ -45,6 +50,9 @@ class sRenderer{
    VkShaderModule _fragmentShader;
    const std::string& _vertexShaderLocation{"../shaders/vertShader.vert.spv"}; 
    const std::string& _fragmentShaderLocation{"../shaders/fragShader.frag.spv"};
+   VkShaderModule createShaderModule(const std::string& filePath);
+
+  
 
    std::vector<VkAttachmentReference> _colorAttachments{};
    std::vector<VkAttachmentReference> _depthAttachments{};
@@ -56,7 +64,7 @@ class sRenderer{
 
 };
 
-class sVertex{
+struct sVertex{
   glm::vec3 _position;
   glm::vec3 _color;
 };

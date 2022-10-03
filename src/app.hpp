@@ -10,7 +10,9 @@
 #include "sRenderer.hpp"
 //std
 #include <iostream>
-
+ 
+ #define HEIGHT 1000
+ #define WIDTH 1500
 
 //file search keys:
 //     (???) source of confusion that needs to be addressed (possible future errors)
@@ -40,8 +42,6 @@ class App
    void cleanup();
 
    
-   const int HEIGHT = 1000;
-   const int WIDTH = 1000;
    const std::string& TITLE = "Vulkan Window";
    sWindow _window{HEIGHT,WIDTH,TITLE};
 

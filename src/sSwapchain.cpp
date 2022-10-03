@@ -115,8 +115,8 @@ void sSwapchain::createImage(VkImageType imageType, VkFormat format,VkImageTilin
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.pNext = NULL;
         imageCreateInfo.format = format;                                                                  //format of image?
-        imageCreateInfo.extent.height = static_cast<uint32_t>(_surfaceCapabilities.currentExtent.height); //size of y
-        imageCreateInfo.extent.width = static_cast<uint32_t>(_surfaceCapabilities.currentExtent.width);   //size of x
+        imageCreateInfo.extent.height = static_cast<uint32_t>(_window.height()); //size of y
+        imageCreateInfo.extent.width = static_cast<uint32_t>(_window.width());   //size of x
         imageCreateInfo.extent.depth = 1; 
         imageCreateInfo.arrayLayers = 1;
         imageCreateInfo.mipLevels = 1;

@@ -15,18 +15,19 @@
 
 namespace shb{
 
-
+class sWindow;
 class sDevice;
 class sSwapchain{
    friend class sRenderer;
  public:
-    sSwapchain(sDevice& d) : _device(d)  {}
+    sSwapchain(sDevice& d, sWindow& w) : _device(d), _window(w) {}
     ~sSwapchain();
     void createSwapchain();
     void createImageViews();
     VkSwapchainKHR getSwapchain() { return _swapchain;}
     VkFormat getFormat() { return _format; }
     std::vector<VkImageView>& getImageViews() { return _swapchainImageViews;}
+    VkFramebuffer getFrameBuffer(int i) { return _frameBuffers[i]; }
 
     void createImage( VkImageType imageType, 
                                   VkFormat format,
@@ -37,16 +38,16 @@ class sSwapchain{
                                   VkDeviceMemory& memory  );
 
     
-
+   VkSurfaceCapabilitiesKHR _surfaceCapabilities;
     VkSwapchainKHR _swapchain;
  private:
     sDevice& _device;
-   
+    sWindow& _window;
+
     sSwapchain* _oldSwapchain = nullptr;
     std::vector<VkImage> _swapchainImages;
-    VkSurfaceCapabilitiesKHR _surfaceCapabilities;
-
-    std::vector<VkFramebuffer> frameBuffers{};
+   
+    std::vector<VkFramebuffer> _frameBuffers{};
     
     
     VkPresentModeKHR _presentMode = VK_PRESENT_MODE_FIFO_KHR; //todo:: query available present modes

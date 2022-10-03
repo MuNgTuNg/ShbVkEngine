@@ -2,11 +2,18 @@
 
 #include "sRenderer.hpp"
 
+
 namespace shb{
 
 void sRenderer::createSwapchain(){
     _swapchain.createSwapchain();
     _swapchain.createImageViews();
+}
+
+
+void sRenderer::render(){
+  _commands.recieveRenderPass(_renderPass);
+  _commands.oneTimeCommand();
 }
 
 
@@ -309,13 +316,13 @@ void sRenderer::createGraphicsPipleine(){
 
 //set scissor to window height and width
  VkRect2D scissor{};
- scissor.extent.height = _window._height;
- scissor.extent.width = _window._width;
+ scissor.extent.height = _window.height();
+ scissor.extent.width = _window.width();
 
 //set viewport to match window height and width also
  VkViewport viewport{};
- viewport.height = _window._height;
- viewport.width = _window._width;
+ viewport.height = _window.height();
+ viewport.width = _window.width();
  viewport.x = 0.0f;                   //x = far left of screen
  viewport.y = 0.0f;                   //y = top of screen
  viewport.minDepth = 0.0f;            //minimum depth check
@@ -394,19 +401,19 @@ void sRenderer::createGraphicsPipleine(){
 
 void sRenderer::createFramebuffers(){ // (???)
 //i want the same amount of framebuffers as i have attachments (which is also how many images im USING)
-  _swapchain.frameBuffers.resize(_attachmentDescriptions.size());
+  _swapchain._frameBuffers.resize(_attachmentDescriptions.size());
 
-  for(int i = 0; i <= _swapchain.frameBuffers.size(); i++){
+  for(int i = 0; i <= _swapchain._frameBuffers.size(); i++){
     VkFramebufferCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    createInfo.height = _swapchain._surfaceCapabilities.currentExtent.height;
-    createInfo.width = _swapchain._surfaceCapabilities.currentExtent.width;
+    createInfo.height = _window.height();
+    createInfo.width = _window.width();
     createInfo.renderPass = _renderPass;                         //defines what renderpasses the framebuffer will be compatable with
     createInfo.attachmentCount = _attachmentDescriptions.size();      //total number of attachments
     createInfo.pAttachments = _swapchain._swapchainImageViews.data(); //pointer into the image views to read attachments to framebuffers (???)
     createInfo.layers = 1;
     
-    if(vkCreateFramebuffer(_device.getDevice(),&createInfo,nullptr,&_swapchain.frameBuffers[i])!=VK_SUCCESS){
+    if(vkCreateFramebuffer(_device.getDevice(),&createInfo,nullptr,&_swapchain._frameBuffers[i])!=VK_SUCCESS){
       sDebug::Print("Failed to create framebuffer");
     }else{
       sDebug::Print("Successfully created framebuffer");
@@ -416,7 +423,7 @@ void sRenderer::createFramebuffers(){ // (???)
 
 
 
-sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device), _swapchain(device) {
+sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device) {
     createSwapchain();
     createPipelineLayout();
     createGraphicsPipleine();
@@ -429,8 +436,8 @@ sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _devic
 
 
 sRenderer::~sRenderer(){
-    for(int i= 0; i<= _swapchain.frameBuffers.size(); i++){
-      vkDestroyFramebuffer(_device.getDevice(),_swapchain.frameBuffers[i],nullptr);
+    for(int i= 0; i<= _swapchain._frameBuffers.size(); i++){
+      vkDestroyFramebuffer(_device.getDevice(),_swapchain._frameBuffers[i],nullptr);
     }
     vkDestroyShaderModule(_device.getDevice(),_fragmentShader,nullptr);
     vkDestroyShaderModule(_device.getDevice(),_vertexShader,nullptr);
