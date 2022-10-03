@@ -64,9 +64,6 @@ class sRenderer{
 
 };
 
-struct sVertex{
-  glm::vec3 _position;
-  glm::vec3 _color;
-};
+
 
 }//namespace shb

@@ -28,7 +28,7 @@ struct QueueFamilyIndices{
 
 
   int totalQueues =0 ;         //indicates the amount of queues added in in total
-  std::vector<int> queueIndicesArray; 
+  std::vector<uint32_t> queueIndicesArray; 
 };
 
 
