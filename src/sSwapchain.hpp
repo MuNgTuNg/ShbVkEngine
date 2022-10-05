@@ -37,7 +37,10 @@ class sSwapchain{
                                   int imageIndex,
                                   VkDeviceMemory& memory  );
 
-    
+        std::vector<VkFramebuffer> _frameBuffers{};
+        std::vector<VkImageView> _swapchainImageViews;
+
+
    VkSurfaceCapabilitiesKHR _surfaceCapabilities;
     VkSwapchainKHR _swapchain;
  private:
@@ -47,12 +50,10 @@ class sSwapchain{
     sSwapchain* _oldSwapchain = nullptr;
     std::vector<VkImage> _swapchainImages;
    
-    std::vector<VkFramebuffer> _frameBuffers{};
     
     
     VkPresentModeKHR _presentMode = VK_PRESENT_MODE_FIFO_KHR; //todo:: query available present modes
     VkFormat _format;
-    std::vector<VkImageView> _swapchainImageViews;
     int _usedImages = 0;
     VkDeviceMemory _colorMemory;
     VkDeviceMemory _depthMemory;    

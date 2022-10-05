@@ -55,53 +55,55 @@ void sCommands::recordCommandBuffer(int index){
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     
    std::vector<sVertex> vertices;
-   for(int i =0; i<=vertices.size(); ++i){
-        vertices[i]._color = glm::vec3{130.f,231.f,131.f};
-        vertices[i]._position = glm::vec3{244.f,234.f,234.f};
+   for(int i =0; i<=3; ++i){
+    sVertex vertex;
+        vertex._color = glm::vec3{130.f,231.f,131.f};
+        vertex._position = glm::vec3{244.f,234.f,234.f};
+        vertices.push_back(vertex);
     
    }
 
-   VkBuffer vBuffer;
-   VkDeviceMemory vertexBufferMemory;
-VkBindBufferMemoryInfo bufferMemoryInfo{};
-bufferMemoryInfo.buffer = vBuffer;
-bufferMemoryInfo.memory = vertexBufferMemory;
-bufferMemoryInfo.memoryOffset = 0;
-bufferMemoryInfo.sType = VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO;
+//    VkBuffer vBuffer;
+//    VkDeviceMemory vertexBufferMemory;
+//    VkBindBufferMemoryInfo bufferMemoryInfo{};
+//    bufferMemoryInfo.buffer = vBuffer;
+//    bufferMemoryInfo.memory = vertexBufferMemory;
+//    bufferMemoryInfo.memoryOffset = 0;
+//    bufferMemoryInfo.sType = VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO;
 
-VkBufferCreateInfo bufferCreateInfo{};
-bufferCreateInfo.pQueueFamilyIndices = QFI.queueIndicesArray.data();
-bufferCreateInfo.queueFamilyIndexCount = QFI.queueIndicesArray.size();
-bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-bufferCreateInfo.size= static_cast<uint32_t>(sizeof(vertices));
+//    VkBufferCreateInfo bufferCreateInfo{};
+//    bufferCreateInfo.pQueueFamilyIndices = QFI.queueIndicesArray.data();
+//    bufferCreateInfo.queueFamilyIndexCount = QFI.queueIndicesArray.size();
+//    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+//    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+//    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+//    bufferCreateInfo.size= static_cast<uint32_t>(sizeof(vertices));
 
 
 
-vkCreateBuffer(_device.getDevice(),&bufferCreateInfo,nullptr,&vBuffer);
+    // vkCreateBuffer(_device.getDevice(),&bufferCreateInfo,nullptr,&vBuffer);
+ 
+    // VkMemoryRequirements memRequirements;
+    // vkGetBufferMemoryRequirements(_device.getDevice(), vBuffer, &memRequirements);
 
-VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(_device.getDevice(), vBuffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    // VkMemoryAllocateInfo allocInfo{};
+    // allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    // allocInfo.allocationSize = memRequirements.size;
+    // allocInfo.memoryTypeIndex = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
     
 
-    if (vkAllocateMemory(_device.getDevice(), &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory!");
-    }
-    VkDeviceSize deviceSize{};
+    // if (vkAllocateMemory(_device.getDevice(), &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
+    //     throw std::runtime_error("failed to allocate buffer memory!");
+    // }
     
-
-   vkBindBufferMemory(_device.getDevice(),vBuffer,vertexBufferMemory,0);
-
+    vkCmdSetDepthBiasEnable(_commandBuffers[index],VK_TRUE);
+    vkCmdSetDepthBias(_commandBuffers[index],1.f,0.f,0.f);
+    //vkBindBufferMemory(_device.getDevice(),vBuffer,vertexBufferMemory,0);
+    
  
     vkCmdBeginRenderPass(_commandBuffers[index],&beginInfo,VK_SUBPASS_CONTENTS_INLINE);
     
-    vkCmdBindVertexBuffers(_commandBuffers[index],0,static_cast<uint32_t>(sizeof(vBuffer)),&vBuffer,&deviceSize);
+    //vkCmdBindVertexBuffers(_commandBuffers[index],0,static_cast<uint32_t>(sizeof(vBuffer)),&vBuffer,&deviceSize);
     vkCmdBindPipeline(_commandBuffers[index],VK_PIPELINE_BIND_POINT_GRAPHICS,_pipeline);
     vkCmdDraw(_commandBuffers[index],3,0,1,0);
 

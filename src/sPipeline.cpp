@@ -1,24 +1,13 @@
 
 
-#include "sRenderer.hpp"
+#include "sPipeline.hpp"
 
 
 namespace shb{
 
-void sRenderer::createSwapchain(){
-    _swapchain.createSwapchain();
-    _swapchain.createImageViews();
-}
 
 
-void sRenderer::render(){
-  _commands.recieveRenderPass(_renderPass);
-  _commands.oneTimeCommand();
-}
-
-
-
-void sRenderer::createRenderPass(){ 
+void sPipeline::createRenderPass(){ 
 
    
    //keep an index of each color attachment 
@@ -86,8 +75,7 @@ void sRenderer::createRenderPass(){
 }
 
 
-
-void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
+void sPipeline::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
                                std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
                                VkPipelineVertexInputStateCreateInfo& inputStateCreateInfo            ) { 
  
@@ -168,11 +156,11 @@ void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
     inputStateCreateInfo.pNext = NULL;
     inputStateCreateInfo.flags = 0;
 
-  //vertex buffer
-    // inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-    // inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    // inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
-    // inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
+  //todo vertexBuffer
+    //inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    //inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    //inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
+    //inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
 
 
 
@@ -180,7 +168,7 @@ void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
 
 
 
-void sRenderer::createPipelineLayout(){ //not entirely sure what this is used for yet
+void sPipeline::createPipelineLayout(){ //not entirely sure what this is used for yet
     VkPipelineLayoutCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
@@ -192,7 +180,7 @@ void sRenderer::createPipelineLayout(){ //not entirely sure what this is used fo
 }
 
 
-VkShaderModule sRenderer::createShaderModule(const std::string& filePath){
+VkShaderModule sPipeline::createShaderModule(const std::string& filePath){
  //open file at the end of the file (ate) in binary form, and open for input
   std::ifstream file;
   file.open(filePath.c_str(), std::ios::ate |  std::ios::binary | std::ios::in );
@@ -238,7 +226,7 @@ VkShaderModule sRenderer::createShaderModule(const std::string& filePath){
 
 
 
-void sRenderer::createGraphicsPipleine(){
+void sPipeline::createGraphicsPipleine(){
 // • The state required for a graphics pipeline is divided into:
 //    » Vertex input state
 //    » Pre-rasterization shader state
@@ -305,11 +293,14 @@ void sRenderer::createGraphicsPipleine(){
 
 
  //signal that the states of the viewport and scissor will change over time
- std::vector<VkDynamicState> dynamicStates = {
-     VK_DYNAMIC_STATE_VIEWPORT,
-     VK_DYNAMIC_STATE_SCISSOR,
-     VK_DYNAMIC_STATE_DEPTH_BIAS
- };
+ std::vector<VkDynamicState> dynamicStates;
+  dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+  dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
+  dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+     
+     
+     
+ 
  
  VkPipelineDynamicStateCreateInfo dynamicState{};
  dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -401,7 +392,7 @@ void sRenderer::createGraphicsPipleine(){
 }
 
 
-void sRenderer::createFramebuffers(){ // (???)
+void sPipeline::createFramebuffers(){ // (???)
 //i want the same amount of framebuffers as i have attachments (which is also how many images im USING)
   _swapchain._frameBuffers.resize(_attachmentDescriptions.size());
 
@@ -425,8 +416,7 @@ void sRenderer::createFramebuffers(){ // (???)
 
 
 
-sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device) {
-    createSwapchain();
+sPipeline::sPipeline(sWindow& window,sDevice& device, sSwapchain& s)  : _window(window), _device(device), _swapchain(s) {
     createPipelineLayout();
     createGraphicsPipleine();
     createFramebuffers();
@@ -437,7 +427,7 @@ sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _devic
 
 
 
-sRenderer::~sRenderer(){
+sPipeline::~sPipeline(){
     for(int i= 0; i<= _swapchain._frameBuffers.size(); i++){
       vkDestroyFramebuffer(_device.getDevice(),_swapchain._frameBuffers[i],nullptr);
     }
