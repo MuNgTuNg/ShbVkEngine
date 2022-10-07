@@ -5,6 +5,23 @@
 
 namespace shb{
 
+void sRenderer::createGameObjects(){
+  triangle.fillVBO();
+  
+}
+
+
+sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device) {
+    createSwapchain();
+    createPipelineLayout();
+    createGraphicsPipleine();
+    createFramebuffers();
+    createRenderPass();
+    
+
+}
+
+
 void sRenderer::createSwapchain(){
     _swapchain.createSwapchain();
     _swapchain.createImageViews();
@@ -12,8 +29,9 @@ void sRenderer::createSwapchain(){
 
 
 void sRenderer::render(){
-  _commands.recieveRenderPass(_renderPass);
-  _commands.oneTimeCommand();
+  _commands.beginCommandBuffer(_currentFrame);
+
+  _commands.endCommandBuffer(_currentFrame);
 }
 
 
@@ -425,14 +443,6 @@ void sRenderer::createFramebuffers(){ // (???)
 
 
 
-sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device) {
-    createSwapchain();
-    createPipelineLayout();
-    createGraphicsPipleine();
-    createFramebuffers();
-    
-
-}
 
 
 

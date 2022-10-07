@@ -6,6 +6,68 @@ namespace shb{
 
 
 
+//@param buffer is the handle to the buffer we want to create
+//@param size is the size of the buffer we want to create
+//@param usage is how we want to use the buffer (VERTEX_BUFFER? UNIFORM_BUFFER? STORAGE_BUFFER? INDEX_BUFFER?)
+//@param memory is the handle to the memory we want to allocate on the device
+//@param properties is a bitmask of the properties we wish the memory we allocate to have (HOST_VISIBLE, DEVICE_LOCAL etc)
+void sDevice::createBuffer(VkBuffer& buffer, VkDeviceSize size, VkBufferUsageFlags usage,
+                           VkDeviceMemory& memory, VkMemoryPropertyFlags properties ){ //create buffer, allocate memory and bind buffer memory to device memory
+ //create buffer
+   VkBufferCreateInfo bufferCreateInfo{};
+   bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;     //can this be used across multiple queues?
+   bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+   bufferCreateInfo.usage = usage;  //what is this going to be used for? VERTEX_BUFFER? UNIFORM_BUFFER?
+   bufferCreateInfo.size= size;     //how big is this buffer going to be
+
+   vkCreateBuffer(_device,&bufferCreateInfo,nullptr,&buffer);
+
+ //retrieve the details necessary to create the memory allocation associated with the buffer
+   VkMemoryRequirements memRequirements; 
+   vkGetBufferMemoryRequirements(_device, buffer, &memRequirements);
+
+
+   VkMemoryAllocateInfo allocInfo{};
+   allocInfo.allocationSize = memRequirements.size;     //size of memory allocation associated with the buffer
+   allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+   allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);  //find the correct memory heap on the device you wish to use
+ //allocate said memory 
+   if(vkAllocateMemory(_device,&allocInfo,nullptr,&memory)!=VK_SUCCESS){
+    sDebug::Print("failed to allocate device memory");
+   } else{
+    sDebug::Print("successfully allocated device memory");
+   }
+   
+  //bind the memory to the buffer memory todo research
+   vkBindBufferMemory(_device,buffer,memory,0);
+ 
+
+}
+
+
+
+//@param typefilter 
+//is a bitmask, and contains a bit set for every heap  memory type supported by the resource (the buffer)
+//@param properties
+//is a memory property e.g HOST_COHERENT or DEVICE_LOCAL
+uint32_t sDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) { 
+
+ //this retrieves a list of different memory heaps that can be allocated from on this gpu (e.g) HOST_VISIBLE, DEVICE_LOCAL 
+  VkPhysicalDeviceMemoryProperties memProperties;
+  vkGetPhysicalDeviceMemoryProperties(_gpu, &memProperties);
+
+  for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) { //for all memory types available from this device
+  //& this index the typefilter bitmask to check that the currently indexed heap matches the properties we're looking for
+  //and also matches the memory type supported by the device
+    if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) { 
+      return i;
+    }
+  }
+
+  throw std::runtime_error("failed to find suitable memory type!");
+}
+
+
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

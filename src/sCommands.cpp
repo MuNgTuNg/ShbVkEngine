@@ -2,9 +2,11 @@
 
 namespace shb{
 
-sCommands::sCommands(sDevice& d, sSwapchain& s, VkPipeline& p) : _device(d), _swapchain(s), _pipeline(p){
+sCommands::sCommands(sDevice& d, sSwapchain& s, VkPipeline& p,VkRenderPass& r) : _device(d), _swapchain(s), _pipeline(p), _renderPass(r){
     createCommandPool();
     allocateCommandBuffers();
+
+    vbo.fillVBO();
 }
 
 
@@ -39,6 +41,7 @@ void sCommands::recordCommandBuffer(int index){
 
     VkClearValue clearValue1{};
     clearValue1.color = {1,33,223,111};
+
     clearValues.push_back(clearValue1);
 
     VkClearValue clearValue2{};
@@ -53,67 +56,41 @@ void sCommands::recordCommandBuffer(int index){
     beginInfo.renderArea = {1000,1500};
     beginInfo.renderPass = _renderPass;
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+   
+
+    sBuffer vertexBuffer(_device,
+                         sizeof(vbo.vertices[0]),
+                         vbo.vertices.size(),
+                         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     
-   std::vector<sVertex> vertices;
-   for(int i =0; i<=3; ++i){
-    sVertex vertex;
-        vertex._color = glm::vec3{130.f,231.f,131.f};
-        vertex._position = glm::vec3{244.f,234.f,234.f};
-        vertices.push_back(vertex);
-    
-   }
-
-//    VkBuffer vBuffer;
-//    VkDeviceMemory vertexBufferMemory;
-//    VkBindBufferMemoryInfo bufferMemoryInfo{};
-//    bufferMemoryInfo.buffer = vBuffer;
-//    bufferMemoryInfo.memory = vertexBufferMemory;
-//    bufferMemoryInfo.memoryOffset = 0;
-//    bufferMemoryInfo.sType = VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO;
-
-//    VkBufferCreateInfo bufferCreateInfo{};
-//    bufferCreateInfo.pQueueFamilyIndices = QFI.queueIndicesArray.data();
-//    bufferCreateInfo.queueFamilyIndexCount = QFI.queueIndicesArray.size();
-//    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-//    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-//    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-//    bufferCreateInfo.size= static_cast<uint32_t>(sizeof(vertices));
+    vertexBuffer.map(VK_WHOLE_SIZE,0);
+    vertexBuffer.writeToBuffer((void*)vbo.vertices.data(),sizeof(vbo.vertices[0])*vbo.vertices.size(),0);
+  
+    vkCmdBindVertexBuffers(_commandBuffers[index],0,1,&vertexBuffer.getBuffer(),0);
 
 
-
-    // vkCreateBuffer(_device.getDevice(),&bufferCreateInfo,nullptr,&vBuffer);
- 
-    // VkMemoryRequirements memRequirements;
-    // vkGetBufferMemoryRequirements(_device.getDevice(), vBuffer, &memRequirements);
-
-    // VkMemoryAllocateInfo allocInfo{};
-    // allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    // allocInfo.allocationSize = memRequirements.size;
-    // allocInfo.memoryTypeIndex = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-    
-
-    // if (vkAllocateMemory(_device.getDevice(), &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
-    //     throw std::runtime_error("failed to allocate buffer memory!");
-    // }
-    
     vkCmdSetDepthBiasEnable(_commandBuffers[index],VK_TRUE);
     vkCmdSetDepthBias(_commandBuffers[index],1.f,0.f,0.f);
-    //vkBindBufferMemory(_device.getDevice(),vBuffer,vertexBufferMemory,0);
     
  
     vkCmdBeginRenderPass(_commandBuffers[index],&beginInfo,VK_SUBPASS_CONTENTS_INLINE);
+
     
-    //vkCmdBindVertexBuffers(_commandBuffers[index],0,static_cast<uint32_t>(sizeof(vBuffer)),&vBuffer,&deviceSize);
     vkCmdBindPipeline(_commandBuffers[index],VK_PIPELINE_BIND_POINT_GRAPHICS,_pipeline);
-    vkCmdDraw(_commandBuffers[index],3,0,1,0);
+    vkCmdDraw(_commandBuffers[index],static_cast<uint32_t>(vbo.vertices.size()),1,0,0);
 
     vkCmdEndRenderPass(_commandBuffers[index]);
+
+    
+
     
 }
 
 
 
 void sCommands::endCommandBuffer(int index){
+   
     if(vkEndCommandBuffer(_commandBuffers[index]) != VK_SUCCESS){
         sDebug::Print("Failed to end command buffer");
     }else{
@@ -171,14 +148,10 @@ void sCommands::allocateCommandBuffers(){
     }
 }
 
-void sCommands::recieveRenderPass(VkRenderPass rp){
-    if(rp == VK_NULL_HANDLE){
-        sDebug::Print("Render pass lost in translation at recieveRenderPass ");
-    }
-    _renderPass = rp;
-}
+
 
 sCommands::~sCommands(){
+     
     vkDestroyCommandPool(_device.getDevice(),_commandPool,nullptr);
 
 }

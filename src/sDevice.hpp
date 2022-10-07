@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <vulkan/vulkan.h>
 #include "sWindow.hpp"
 #include <cstring>
 #include "sDebug.hpp"
@@ -46,6 +47,13 @@ class sDevice{
   VkSurfaceKHR getSurface() const { return _surface; }
   VkPhysicalDevice getPhysicalDevice() const { return _gpu ; }
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+  uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+  void createBuffer(VkBuffer& buffer,
+                    VkDeviceSize size, 
+                    VkBufferUsageFlags usage,
+                    VkDeviceMemory& memory, 
+                    VkMemoryPropertyFlags properties);
 
   
  private:
@@ -55,6 +63,8 @@ class sDevice{
   void pickPhysicalDevice();
   void createLogicalDevice();
   bool checkValidationLayerSupport();
+
+  
 
 
   bool isDeviceSuitable(VkPhysicalDevice& device);

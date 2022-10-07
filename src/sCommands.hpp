@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include "sDevice.hpp"
+#include "sBuffer.hpp"
 #include "sSwapchain.hpp"
 #include "sObjects.hpp"
 
@@ -15,7 +16,7 @@ namespace shb{
 
 class sCommands{
  public:
-    sCommands(sDevice& d, sSwapchain& s, VkPipeline& p);
+    sCommands(sDevice& d, sSwapchain& s, VkPipeline& p,VkRenderPass& r);
     ~sCommands();
     
     void createCommandPool();
@@ -28,11 +29,11 @@ class sCommands{
     void endCommandBuffer(int currentBuffer);
     void submitCommandBuffer(int currentBuffer);
 
-    void recieveRenderPass(VkRenderPass rp);
-
 
 
  private:
+
+    sVBO vbo;
     
     int cmdBufferIndex =0;
     std::vector<VkCommandBuffer> _commandBuffers{};
@@ -41,7 +42,7 @@ class sCommands{
     VkCommandPool _commandPool;
     VkFence _fence;
     
-    VkRenderPass _renderPass;
+    VkRenderPass& _renderPass;
     sDevice& _device;
     sSwapchain& _swapchain;
     VkPipeline& _pipeline;
@@ -49,6 +50,8 @@ class sCommands{
     void recHandW(int h, int w) { HEIGHT = h; WIDTH = w;}
     int HEIGHT;
     int WIDTH;
+
+
 };
 
 

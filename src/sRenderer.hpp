@@ -30,6 +30,7 @@ class sRenderer{
    void createRenderPass();
    void createPipelineLayout();
    void createFramebuffers();
+   void createGameObjects();
 
    void setVertexInput(std::vector<VkVertexInputAttributeDescription>&  attributeDescriptions,
                        std::vector<VkVertexInputBindingDescription>& inputBindingDescriptions,
@@ -39,7 +40,7 @@ class sRenderer{
    sDevice& _device;
    sSwapchain _swapchain{_device,_window};
    VkPipeline _pipeline;
-   sCommands _commands{_device,_swapchain,_pipeline};
+   sCommands _commands{_device,_swapchain,_pipeline,_renderPass};
 
    VkPipelineLayout _pipelineLayout;
    VkRenderPass _renderPass;
@@ -58,8 +59,11 @@ class sRenderer{
    std::vector<VkAttachmentReference> _depthAttachments{};
    std::vector<VkAttachmentDescription> _attachmentDescriptions{};
 
+   sVBO triangle;
+    
 
 
+   uint32_t _currentFrame =0;
  
 
 };

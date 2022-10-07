@@ -16,7 +16,7 @@ void sPipeline::createRenderPass(){
     colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;     //image starts undefined
     colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //i want this image to be presentable when the render pass is finished
     colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;               //how many samples (per pixel?) i want to take
-    colorAttachmentDescription.format = _swapchain.getFormat();               //format of the image being described
+    colorAttachmentDescription.format = VK_FORMAT_R32G32B32_SFLOAT;               //format of the image being described
     colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;          //when i load this attachment i want it to clear its contents
     colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;    //i dont care about storing it, it doesnt matter right now
    //add color attachment to the vector of color attachments 
@@ -95,6 +95,7 @@ void sPipeline::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
     uint32_t binding = 0;              //index 0 is one sort of group of objects(?)
     uint32_t stride = sizeof(sVertex); //stride is the total size of each individual vertex being fed to the shader program
     
+    
     if(binding <= deviceProperties.limits.maxVertexInputBindings 
        && stride <= deviceProperties.limits.maxVertexInputBindingStride){
         inputBindingDescription1.binding = binding; 
@@ -106,25 +107,25 @@ void sPipeline::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
    
 
   //attribute descriptions describe the component parts of a vertex, VK_FORMAT_R32_G32_SFLOAT describes two floats, used as 2d coordinates x and y
-    VkVertexInputAttributeDescription xyAttribute{};
-    xyAttribute.format = VK_FORMAT_R32G32B32_SFLOAT; //confusingly this uses the same enum as the colorspace
+    VkVertexInputAttributeDescription xyzAttribute{};
+    xyzAttribute.format = VK_FORMAT_R32G32B32_SFLOAT; //confusingly this uses the same enum as the colorspace
     
   //basic checking if the offset is within limits
-    uint32_t xyAttrOffset = 0;
-    uint32_t xyAttrLocation = 0;
+    uint32_t xyzAttrOffset = 0;
+    uint32_t xyzAttrLocation = 0;
   
-    if(xyAttrOffset <= deviceProperties.limits.maxVertexInputAttributeOffset 
-       && inputBindingDescription1.binding <= deviceProperties.limits.maxVertexInputBindings   
-       && xyAttrLocation <= deviceProperties.limits.maxVertexInputAttributes ){
+    if(xyzAttrOffset <= deviceProperties.limits.maxVertexInputAttributeOffset 
+       && binding <= deviceProperties.limits.maxVertexInputBindings   
+       && xyzAttrLocation <= deviceProperties.limits.maxVertexInputAttributes ){
 
-        xyAttribute.offset = xyAttrOffset;         //where the data for this component starts within the struct e.g after 2 floats (2*sizeof(float))
-        xyAttribute.binding = inputBindingDescription1.binding;       //binding is what other attributes it is bound to in a kind of group
-        xyAttribute.location = xyAttrLocation;    //location corresponds with the GLSL (location )  
+        xyzAttribute.offset = xyzAttrOffset;         //where the data for this component starts within the struct e.g after 2 floats (2*sizeof(float))
+        xyzAttribute.binding = binding;       //binding is what other attributes it is bound to in a kind of group
+        xyzAttribute.location = xyzAttrLocation;    //location corresponds with the GLSL (location )  
 
     }else{
         sDebug::Print("Attribute descriptions unsuitable");
     }
-    attributeDescriptions.push_back(xyAttribute);
+    attributeDescriptions.push_back(xyzAttribute);
   
   //color component of my vertex = 3 integers
     VkVertexInputAttributeDescription colorAttribute{};
@@ -157,11 +158,11 @@ void sPipeline::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
     inputStateCreateInfo.flags = 0;
 
   //todo vertexBuffer
-    //inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-    //inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    //inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
-    //inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
-
+    inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
+    inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
+    
 
 
 }
