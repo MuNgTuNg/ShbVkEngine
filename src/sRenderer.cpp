@@ -12,11 +12,12 @@ void sRenderer::createGameObjects(){
 
 
 sRenderer::sRenderer(sWindow& window,sDevice& device)  : _window(window), _device(device) {
+    //createRenderPass();
+    
     createSwapchain();
     createPipelineLayout();
     createGraphicsPipleine();
     createFramebuffers();
-    createRenderPass();
     
 
 }
@@ -187,10 +188,10 @@ void sRenderer::setVertexInput(std::vector<VkVertexInputAttributeDescription>&  
     inputStateCreateInfo.flags = 0;
 
   //vertex buffer
-    // inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-    // inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    // inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
-    // inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
+    inputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    inputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    inputStateCreateInfo.pVertexBindingDescriptions = inputBindingDescriptions.data();
+    inputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindingDescriptions.size());
 
 
 

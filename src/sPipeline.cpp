@@ -11,22 +11,24 @@ void sPipeline::createRenderPass(){
 
    
    //keep an index of each color attachment 
-   int colorAttachmentIndex = 0;
+    const int colorAttachmentIndex = 0;
     VkAttachmentDescription colorAttachmentDescription{};
     colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;     //image starts undefined
     colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //i want this image to be presentable when the render pass is finished
     colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;               //how many samples (per pixel?) i want to take
-    colorAttachmentDescription.format = VK_FORMAT_R32G32B32_SFLOAT;               //format of the image being described
+    colorAttachmentDescription.format = _swapchain.getFormat();               //format of the image being described
     colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;          //when i load this attachment i want it to clear its contents
     colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;    //i dont care about storing it, it doesnt matter right now
    //add color attachment to the vector of color attachments 
     _attachmentDescriptions.push_back(colorAttachmentDescription);
 
 
-    int depthAttachmentIndex = 1;
+    const int depthAttachmentIndex = 1;
     VkAttachmentDescription depthAttachmentDescription{};
     depthAttachmentDescription.loadOp =  VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT;
     depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -37,13 +39,13 @@ void sPipeline::createRenderPass(){
   //first color attachment
     VkAttachmentReference colorAttachment1{};
     colorAttachment1.attachment = colorAttachmentIndex;                   //index of the particular attachment
-    colorAttachment1.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;   //how i want the image laid out
+    colorAttachment1.layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;   //how i want the image laid out
     _colorAttachments.push_back(colorAttachment1);
 
   //first depth attachment
-    VkAttachmentReference depthAttachment1{};
+    VkAttachmentReference depthAttachment1;
     depthAttachment1.attachment = depthAttachmentIndex;
-    depthAttachment1.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthAttachment1.layout = static_cast<VkImageLayout>(3) ;
     _depthAttachments.push_back(depthAttachment1); 
   
   
@@ -51,10 +53,23 @@ void sPipeline::createRenderPass(){
   //create subpass 1 (0)
     VkSubpassDescription subPass1{};
     subPass1.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;    //this is going to bind to a graphics pipeline
-    subPass1.colorAttachmentCount = _colorAttachments.size();         //all the color attachments
+    subPass1.colorAttachmentCount = 1;         //all the color attachments
     subPass1.pColorAttachments = _colorAttachments.data();            //pointer into the color attachments vector
-    subPass1.pDepthStencilAttachment = _depthAttachments.data();    
+    subPass1.pDepthStencilAttachment = &depthAttachment1;
+       
     _subPasses.push_back(subPass1);
+
+     VkSubpassDependency dependency = {};
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.srcAccessMask = 0;
+  dependency.srcStageMask =
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  dependency.dstSubpass = 0;
+  dependency.dstStageMask =
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  dependency.dstAccessMask =
+      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
     
 
   //render pass information
@@ -65,6 +80,8 @@ void sPipeline::createRenderPass(){
      renderPassCreateInfo.pAttachments = _attachmentDescriptions.data();    
      renderPassCreateInfo.subpassCount = static_cast<uint32_t>(_subPasses.size());
      renderPassCreateInfo.pSubpasses = _subPasses.data();
+     renderPassCreateInfo.dependencyCount = 1;
+     renderPassCreateInfo.pDependencies = &dependency;
      
 
      if(vkCreateRenderPass(_device.getDevice(), &renderPassCreateInfo,nullptr, &_renderPass) != VK_SUCCESS){
